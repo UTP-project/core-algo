@@ -1,6 +1,6 @@
 import random
-from common import SuccessMsg, ErrorMsg, printList
-from GA import rws, generateChromosomeMatrix
+from common import printList, printErrorMsg, printSuccessMsg
+from GA import rws, generateChromosomeMatrix, selectChromosome
 
 # generate chromosome matrix test
 def gcm_test():
@@ -8,18 +8,22 @@ def gcm_test():
     g_num = 20
     m = generateChromosomeMatrix(c_num, g_num)
     c_set = set()
+    info = {
+        'c_num': c_num,
+        'g_num': g_num
+    }
     for i in range(len(m)):
         c_set.add(str(m[i]))
         g_set = set(m[i])
         if len(g_set) != g_num:
-            print(f'{ErrorMsg("[Error gcm]")} output test Error: gene number is not right!\nexpect: {g_num}, actual: {len(g_set)}\nc_num: {c_num}\ng_num: {g_num}\nmatix:')
-            printList(m)
+            indent = printErrorMsg('gcm', 'gene number is not right!', g_num, len(g_set), info)
+            printList(m, name='matrix:', prefix=indent)
             return
     if len(c_set) != c_num:
-        print(f'{ErrorMsg("[Error gcm]")} output test Error: chromosome number is not right!\nexpect: {c_num}, actual: {len(c_set)}\nc_num: {c_num}\ng_num: {g_num}\nmatix:')
-        printList(m)
+        indent = printErrorMsg('gcm', 'chromosome number is not right!', c_num, len(c_set), info)
+        printList(m, name='matrix:', prefix=indent)
         return
-    print(f'{SuccessMsg("[Success gcm]")} output test OK')
+    printSuccessMsg('gcm')
     
 
 # generate rws list
@@ -40,9 +44,14 @@ def rws_test():
     num = random.randrange(100)
     inputData = rws_rand_list(num)
     outputData = rws(inputData)
-    # print(sum(inputData), inputData, outputData)
+    info = {
+        'inputData': inputData,
+        'sum': sum(inputData)
+    }
     if 0 <= outputData < num:
-        print(f'{SuccessMsg("[Success rws]")} output test OK')
+        printSuccessMsg('rws')
+    else:
+        printErrorMsg('rws', 'index out of range', '0 <= output < input', outputData, info)
 
 def main():
     rws_test()

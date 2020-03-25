@@ -9,20 +9,41 @@ class printColor:
     UNDERLINE = '\033[4m'
 
 def SuccessMsg(msg):
-    return printColor.OKGREEN + printColor.BOLD + msg + printColor.ENDC
+    return printColor.OKGREEN + msg + printColor.ENDC
 
 def ErrorMsg(msg):
-    return printColor.FAIL + printColor.BOLD + msg + printColor.ENDC
+    return printColor.FAIL + msg + printColor.ENDC
+
+def WarningMsg(msg):
+    return printColor.WARNING + msg + printColor.ENDC
+
+def BoldMsg(msg):
+    return printColor.BOLD + msg + printColor.ENDC
 
 
-def printList(lst, deep = 2, indent = 2, layer = 0):
+def printList(lst, deep = 2, indent = 2, layer = 0, name = '', prefix = ''):
+    if name:
+        print(f'{prefix}{name}')
     if deep <= 1:
         print(lst)
         return
-    prefix = ''.rjust(layer * 2, ' ')
+    prefix = prefix.rjust(layer * 2, ' ')
     for i, v in enumerate(lst):
         if deep <= 2:
             print(f'{prefix}{i}: {v}')
         else:
             print(f'{prefix}{i}:')
             printList(lst[i], deep - 1, indent, layer + 1)
+
+def printSuccessMsg(name):
+    print(SuccessMsg(BoldMsg(f'[Success {name}] output test OK')))
+
+def printErrorMsg(name, detail, expect, actual, other):
+    header = f'[Error {name}]'
+    prefix = ''.rjust(len(header) + 1, ' ')
+    print(ErrorMsg(BoldMsg(f'{header} {detail}')))
+    print(f'{prefix}expect: {SuccessMsg(str(expect))}, actual: {ErrorMsg(str(actual))}')
+    for k in other.items():
+        print(prefix + '{}: {}'.format(*k))
+    return prefix
+
