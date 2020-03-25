@@ -15,5 +15,14 @@ def ErrorMsg(msg):
     return printColor.FAIL + printColor.BOLD + msg + printColor.ENDC
 
 
-def printList(lst):
-    print('\n'.join('{}: {}'.format(*k) for k in enumerate(lst)))
+def printList(lst, deep = 2, indent = 2, layer = 0):
+    if deep <= 1:
+        print(lst)
+        return
+    prefix = ''.rjust(layer * 2, ' ')
+    for i, v in enumerate(lst):
+        if deep <= 2:
+            print(f'{prefix}{i}: {v}')
+        else:
+            print(f'{prefix}{i}:')
+            printList(lst[i], deep - 1, indent, layer + 1)
