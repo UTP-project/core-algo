@@ -13,3 +13,7 @@ def SuccessMsg(msg):
 
 def ErrorMsg(msg):
     return printColor.FAIL + printColor.BOLD + msg + printColor.ENDC
+
+
+def printList(lst):
+    print('\n'.join('{}: {}'.format(*k) for k in enumerate(lst)))
