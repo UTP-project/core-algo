@@ -23,22 +23,22 @@ def BoldMsg(msg):
 
 def printList(lst, deep = 2, indent = 2, layer = 0, name = '', prefix = ''):
     if name:
-        print(f'{prefix}{name}')
+        print(f'{prefix}{name}:')
     if deep <= 1:
         print(lst)
         return
-    prefix = prefix.rjust(layer * 2, ' ')
+    curPrefix = ''.rjust(layer * 2, ' ')
     for i, v in enumerate(lst):
         if deep <= 2:
-            print(f'{prefix}{i}: {v}')
+            print(f'{prefix}{curPrefix}{i}: {v}')
         else:
-            print(f'{prefix}{i}:')
-            printList(lst[i], deep - 1, indent, layer + 1)
+            print(f'{prefix}{curPrefix}{i}:')
+            printList(lst[i], deep - 1, indent, layer + 1, prefix=prefix)
 
 def printSuccessMsg(name):
     print(SuccessMsg(BoldMsg(f'[Success {name}] output test OK')))
 
-def printErrorMsg(name, detail, expect, actual, other):
+def printErrorMsg(name, detail, expect, actual, other = {}):
     header = f'[Error {name}]'
     prefix = ''.rjust(len(header) + 1, ' ')
     print(ErrorMsg(BoldMsg(f'{header} {detail}')))

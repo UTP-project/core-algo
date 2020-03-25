@@ -17,11 +17,11 @@ def gcm_test():
         g_set = set(m[i])
         if len(g_set) != g_num:
             indent = printErrorMsg('gcm', 'gene number is not right!', g_num, len(g_set), info)
-            printList(m, name='matrix:', prefix=indent)
+            printList(m, name='matrix', prefix=indent)
             return
     if len(c_set) != c_num:
         indent = printErrorMsg('gcm', 'chromosome number is not right!', c_num, len(c_set), info)
-        printList(m, name='matrix:', prefix=indent)
+        printList(m, name='matrix', prefix=indent)
         return
     printSuccessMsg('gcm')
     
