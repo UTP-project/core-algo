@@ -31,4 +31,4 @@ def rws(selectionProbability):
         if acc > rand:
             return i
     else:
-        return i
+        len(selectionProbability) - 1
