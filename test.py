@@ -53,9 +53,23 @@ def rws_test():
     else:
         printErrorMsg('rws', 'index out of range', '0 <= output < input', outputData, info)
 
+def select_test():
+    random.seed()
+    c_num = random.randrange(100)
+    g_num = random.randrange(100)
+    offspring_p = random.random()
+    selection_p = rws_rand_list(c_num)
+    m = generateChromosomeMatrix(c_num, g_num)
+    parents = selectChromosome(m, offspring_p, selection_p)
+    if len(parents) != round(offspring_p * c_num / 2):
+        indent = printErrorMsg('select', 'parents number is not right', round(offspring_p * c_num / 2), len(parents))
+        printList(parents, 3, name='parents list', prefix=indent)
+    printSuccessMsg('select')
+
 def main():
     rws_test()
     gcm_test()
+    select_test()
 
 main()
     

@@ -21,6 +21,16 @@ def generateChromosomeMatrix(chromosomeNum, geneNum):
         matrix.append(chromosome)
     return matrix
 
+# select chromosome
+def selectChromosome(chromosomeMatrix, offspringProportion, selectionProbability):
+    offSpringNum = round(offspringProportion * len(selectionProbability) / 2)
+    parentList = []
+    for i in range(offSpringNum):
+        dad = chromosomeMatrix[rws(selectionProbability)].copy()
+        mom = chromosomeMatrix[rws(selectionProbability)].copy()
+        parentList.append((dad, mom))
+    return parentList
+
 # roulette wheel selection
 def rws(selectionProbability):
     random.seed()
