@@ -1,12 +1,12 @@
 import random
 from common import printList, printErrorMsg, printSuccessMsg
-from GA import rws, generateChromosomeMatrix, selectChromosome
+from GA import rws, gen_population, select
 
 # generate chromosome matrix test
 def gcm_test():
     c_num = 5
     g_num = 20
-    m = generateChromosomeMatrix(c_num, g_num)
+    m = gen_population(c_num, g_num)
     c_set = set()
     info = {
         'c_num': c_num,
@@ -59,8 +59,8 @@ def select_test():
     g_num = random.randrange(100)
     offspring_p = random.random()
     selection_p = rws_rand_list(c_num)
-    m = generateChromosomeMatrix(c_num, g_num)
-    parents = selectChromosome(m, offspring_p, selection_p)
+    m = gen_population(c_num, g_num)
+    parents = select(m, offspring_p, selection_p)
     if len(parents) != round(offspring_p * c_num / 2):
         indent = printErrorMsg('select', 'parents number is not right', round(offspring_p * c_num / 2), len(parents))
         printList(parents, 3, name='parents list', prefix=indent)
