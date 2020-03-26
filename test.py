@@ -1,6 +1,6 @@
 import random
 from common import printList, printErrorMsg, printSuccessMsg
-from GA import rws, gen_population, select
+from GA import rws, gen_population, select, crossover, gen_list
 
 # generate chromosome matrix test
 def gcm_test():
@@ -66,10 +66,39 @@ def select_test():
         printList(parents, 3, name='parents list', prefix=indent)
     printSuccessMsg('select')
 
+def crossover_test():
+    random.seed()
+    p_num = random.randrange(100)
+    g_num = random.randrange(100)
+    parentList = []
+    for i in range(p_num):
+        parentList.append((gen_list(1, g_num + 1), gen_list(1, g_num + 1)))
+    offspringList, cuts = crossover(parentList)
+
+    if len(offspringList) != p_num * 2:
+        indent = printErrorMsg('cross', 'offspring number is not right', p_num * 2, len(offspringList))
+        printList(offspringList, name='offspring list', prefix=indent)
+
+    for i in range(len(parentList)):
+        for j in range(*cuts[i]):
+            if offspringList[i * 2][j] != parentList[i][1][j]:
+                printErrorMsg('cross', f'offspring not match parent on the pos {j}', parentList[i][1][j], offspringList[i * 2][j], { 'cuts': cuts[i], 'parent': parentList[i], 'offspring': (offspringList[i * 2], offspringList[i * 2 + 1]) })
+                return
+            if offspringList[i * 2 + 1][j] != parentList[i][0][j]:
+                printErrorMsg('cross', f'offspring not match parent on the pos {j}', parentList[i][0][j], offspringList[i * 2 + 1][j], { 'cuts': cuts[i], 'parent': parentList[i], 'offspring': (offspringList[i * 2], offspringList[i * 2 + 1]) })
+                return
+    
+    for i in range(len(offspringList)):
+        if len(set(offspringList[i])) != g_num:
+            printErrorMsg('cross', 'offspring gene number not right or has repeated value', g_num, len(set(offspringList[i])), { "offspring": offspringList[i] })
+    
+    printSuccessMsg('cross')
+
 def main():
     rws_test()
     gcm_test()
     select_test()
+    crossover_test()
 
 main()
     

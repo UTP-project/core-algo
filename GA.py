@@ -31,6 +31,41 @@ def select(population, offspring_percent, selection_prob):
         parentList.append((dad, mom))
     return parentList
 
+# crossover (partial-mapped)
+def crossover(parentList):
+    random.seed()
+    offspringList = []
+    cuts = []
+    for i in range(len(parentList)):
+        child1 = parentList[i][0].copy()
+        child2 = parentList[i][1].copy()
+        cut = random.sample(range(1, len(child1)), 2)
+        cut.sort()
+        map1 = {}
+        map2 = {}
+        for j in range(*cut):
+            map1[child2[j]] = j
+            map2[child1[j]] = j
+        for j in range(len(child1)):
+            if len(map1) == 0:
+                break
+            while child1[j] in map1:
+                t = child1[j]
+                child1[j], child1[map1[t]] = child1[map1[t]], child1[j]
+                del(map1[t])
+        for k in range(len(child2)):
+            if len(map2) == 0:
+                break
+            while child2[k] in map2:
+                t = child2[k]
+                child2[k], child2[map2[t]] = child2[map2[t]], child2[k]
+                del(map2[t])
+        offspringList.append(child1)
+        offspringList.append(child2)
+        cuts.append(cut)
+    return offspringList, cuts
+
+
 # roulette wheel selection
 def rws(selection_prob):
     random.seed()
