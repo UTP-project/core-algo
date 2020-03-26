@@ -42,7 +42,7 @@ def rws_rand_list(num):
 # roulette wheel selection test
 def rws_test():
     random.seed()
-    num = random.randrange(100)
+    num = random.randint(10, 100)
     inputData = rws_rand_list(num)
     outputData = rws(inputData)
     info = {
@@ -56,8 +56,8 @@ def rws_test():
 
 def select_test():
     random.seed()
-    c_num = random.randrange(100)
-    g_num = random.randrange(100)
+    c_num = random.randint(10, 100)
+    g_num = random.randint(10, 100)
     offspring_p = random.random()
     selection_p = rws_rand_list(c_num)
     m = gen_population(c_num, g_num)
@@ -69,8 +69,8 @@ def select_test():
 
 def crossover_test():
     random.seed()
-    p_num = random.randrange(100)
-    g_num = random.randrange(100)
+    p_num = random.randint(10, 100)
+    g_num = random.randint(10, 100)
     parentList = []
     for i in range(p_num):
         parentList.append((gen_list(1, g_num + 1), gen_list(1, g_num + 1)))
@@ -97,8 +97,8 @@ def crossover_test():
 
 def mutation_test():
     random.seed()
-    o_num = random.randrange(100)
-    g_num = random.randrange(100)
+    o_num = random.randint(10, 100)
+    g_num = random.randint(10, 100)
     offspringList = []
     for i in range(o_num):
         offspringList.append(gen_list(1, g_num + 1))
