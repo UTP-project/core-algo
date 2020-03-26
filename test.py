@@ -1,6 +1,7 @@
 import random
+import copy
 from common import printList, printErrorMsg, printSuccessMsg
-from GA import rws, gen_population, select, crossover, gen_list
+from GA import rws, gen_population, select, crossover, mutation, gen_list
 
 # generate chromosome matrix test
 def gcm_test():
@@ -94,11 +95,32 @@ def crossover_test():
     
     printSuccessMsg('cross')
 
+def mutation_test():
+    random.seed()
+    o_num = random.randrange(100)
+    g_num = random.randrange(100)
+    offspringList = []
+    for i in range(o_num):
+        offspringList.append(gen_list(1, g_num + 1))
+    o_offspringList = copy.deepcopy(offspringList)
+
+    sp = mutation(offspringList)
+
+    for i in range(o_num):
+        if sp[i]:
+            if o_offspringList[i][sp[i][0]] != offspringList[i][sp[i][1]] or o_offspringList[i][sp[i][1]] != offspringList[i][sp[i][0]]:
+                expect = o_offspringList[i].copy()
+                expect[sp[i][0]], expect[sp[i][1]] = expect[sp[i][1]], expect[sp[i][0]]
+                printErrorMsg('mutation', 'swap value is not right', expect, offspringList[i], { 'swap_point': sp[i] })
+    
+    printSuccessMsg('mutation')
+
 def main():
     rws_test()
     gcm_test()
     select_test()
     crossover_test()
+    mutation_test()
 
 main()
     

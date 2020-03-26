@@ -65,6 +65,19 @@ def crossover(parentList):
         cuts.append(cut)
     return offspringList, cuts
 
+# mutation (swap)
+def mutation(offspringList):
+    random.seed()
+    swap_points = []
+    for i in range(len(offspringList)):
+        mutation_prob = random.random()
+        if mutation_prob > 0.5:
+            swap_point = random.sample(range(len(offspringList[i])), 2)
+            offspringList[i][swap_point[0]], offspringList[i][swap_point[1]] = offspringList[i][swap_point[1]], offspringList[i][swap_point[0]]
+            swap_points.append(swap_point)
+        else:
+            swap_points.append(False)
+    return swap_points
 
 # roulette wheel selection
 def rws(selection_prob):
