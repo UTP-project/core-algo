@@ -99,12 +99,13 @@ def mutation_test():
     random.seed()
     o_num = random.randint(10, 100)
     g_num = random.randint(10, 100)
+    mutation_prob = random.random()
     offspringList = []
     for i in range(o_num):
         offspringList.append(gen_list(1, g_num + 1))
     o_offspringList = copy.deepcopy(offspringList)
 
-    sp = mutation(offspringList)
+    sp = mutation(offspringList, mutation_prob)
 
     for i in range(o_num):
         if sp[i]:

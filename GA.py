@@ -66,12 +66,12 @@ def crossover(parentList):
     return offspringList, cuts
 
 # mutation (swap)
-def mutation(offspringList):
+def mutation(offspringList, mutation_prob = 0.5):
     random.seed()
     swap_points = []
     for i in range(len(offspringList)):
-        mutation_prob = random.random()
-        if mutation_prob > 0.5:
+        tmp = random.random()
+        if tmp > mutation_prob:
             swap_point = random.sample(range(len(offspringList[i])), 2)
             offspringList[i][swap_point[0]], offspringList[i][swap_point[1]] = offspringList[i][swap_point[1]], offspringList[i][swap_point[0]]
             swap_points.append(swap_point)
