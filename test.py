@@ -1,6 +1,6 @@
 import random
 import copy
-from common import printList, printErrorMsg, printSuccessMsg
+from common import printList, printErrorMsg, printSuccessMsg, sort2List
 from GA import rws, gen_population, select, crossover, mutation, cal_fitness, gen_list
 
 # generate chromosome matrix test
@@ -138,6 +138,48 @@ def mutation_test():
     
     printSuccessMsg('mutation')
 
+def sort_test():
+    key = [3, 2, 4, 1]
+    val = ['a', 'b', 'd', 'c']
+    key_expect = [1, 2, 3, 4]
+    val_expect = ['c', 'b', 'a', 'd']
+    output_key, output_val = sort2List(key, val)
+    for i in range(len(output_key)):
+        if output_key[i] != key_expect[i]:
+            printErrorMsg('sort', f'key output not right on pos {i}', key_expect[i], output_key[i], {
+                'key': key,
+                'expect_key': key_expect,
+                'output': output_key
+            })
+            return
+        if output_val[i] != val_expect[i]:
+            printErrorMsg('sort', f'val output not right on pos {i}', val_expect[i], output_val[i], {
+                'val': val,
+                'expect_val': val_expect,
+                'output': output_val
+            })
+            return
+    
+    output_key, output_val = sort2List(key, val, True)
+    key_expect.reverse()
+    val_expect.reverse()
+    for i in range(len(output_key)):
+        if output_key[i] != key_expect[i]:
+            printErrorMsg('sort', f'key output not right on pos {i} while reverse', key_expect[i], output_key[i], {
+                'key': key,
+                'expect_key': key_expect,
+                'output': output_key
+            })
+            return
+        if output_val[i] != val_expect[i]:
+            printErrorMsg('sort', f'val output not right on pos {i} while reverse', val_expect[i], output_val[i], {
+                'val': val,
+                'expect_val': val_expect,
+                'output': output_val
+            })
+            return
+    printSuccessMsg('sort')
+
 def main():
     rws_test()
     cal_fitness_test()
@@ -145,6 +187,7 @@ def main():
     select_test()
     crossover_test()
     mutation_test()
+    sort_test()
 
 main()
     
