@@ -213,7 +213,7 @@ def final_test():
     route_time = [0, 12, 12]
     play_time = [0, 1, 2, 1.5]
     time_window = [(0, 24), (1, 3), (7, 8), (2, 6)]
-    population, fitness = ga(dist, time_cost, route_time, play_time, time_window, 1, 10)
+    population, fitness = ga(dist, time_cost, route_time, play_time, time_window, 1, 0.4, 10)
     print(population, fitness)
 
 def main():
