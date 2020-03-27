@@ -1,4 +1,26 @@
 import random
+from common import sort2List
+
+def main(dist, time_cost, route_time, play_time, time_window, offspring_percent, iteration):
+    days = len(route_time) - 1
+    g_num = len(play_time) - 1
+    population = gen_population(g_num, g_num)
+    fitness, _ = cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
+    fitness, population = sort2List(fitness, population, True)
+    print('The 0 generation:')
+    print(f'population: {population}')
+    print(f'fitness: {fitness}\n')
+    for i in range(1, iteration + 1):
+        selection_prob = [x / sum(fitness) for x in fitness]
+        parents = select(population, offspring_percent, selection_prob)
+        population, _ = crossover(parents)
+        mutation(population)
+        fitness, _ = cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
+        fitness, population = sort2List(fitness, population, True)
+        print(f'The {i} generation:')
+        print(f'population: {population}')
+        print(f'fitness: {fitness}\n')
+    return population, fitness
 
 # generate random list
 def gen_list(start, end):
@@ -61,6 +83,7 @@ def cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
         fitness.append(1000 / cost)
         total_cost.append(cost)
     return fitness, total_cost
+
 
 # select chromosome
 def select(population, offspring_percent, selection_prob):

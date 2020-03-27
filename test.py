@@ -1,7 +1,7 @@
 import random
 import copy
 from common import printList, printErrorMsg, printSuccessMsg, sort2List
-from GA import rws, gen_population, select, crossover, mutation, cal_fitness, gen_list
+from GA import rws, gen_population, select, crossover, mutation, cal_fitness, gen_list, main as ga
 
 # generate chromosome matrix test
 def gcm_test():
@@ -32,15 +32,15 @@ def cal_fitness_test():
     g_num = 3
     dist = [
         [0, 0 ,0, 0],
-        [0, 30, 40, 70],
-        [0, 50, 90, 10],
-        [0, 50, 50, 60]
+        [0, 0, 40, 70],
+        [0, 50, 0, 10],
+        [0, 50, 50, 0]
     ]
     time_cost = [
         [0, 0 ,0, 0],
-        [0, 3, 4, 7],
-        [0, 5, 9, 1],
-        [0, 5, 5, 6]
+        [0, 0, 4, 7],
+        [0, 5, 0, 1],
+        [0, 5, 5, 0]
     ]
     route_time = [0, 12, 12]
     play_time = [0, 1, 2, 1.5]
@@ -180,6 +180,27 @@ def sort_test():
             return
     printSuccessMsg('sort')
 
+def final_test():
+    c_num = 3
+    g_num = 3
+    dist = [
+        [0, 0 ,0, 0],
+        [0, 0, 40, 70],
+        [0, 50, 0, 10],
+        [0, 50, 50, 0]
+    ]
+    time_cost = [
+        [0, 0 ,0, 0],
+        [0, 0, 4, 7],
+        [0, 5, 0, 1],
+        [0, 5, 5, 0]
+    ]
+    route_time = [0, 12, 12]
+    play_time = [0, 1, 2, 1.5]
+    time_window = [(0, 24), (1, 3), (7, 8), (2, 6)]
+    population, fitness = ga(dist, time_cost, route_time, play_time, time_window, 1, 10)
+    print(population, fitness)
+
 def main():
     rws_test()
     cal_fitness_test()
@@ -188,6 +209,7 @@ def main():
     crossover_test()
     mutation_test()
     sort_test()
+    final_test()
 
 main()
     
