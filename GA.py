@@ -21,6 +21,47 @@ def gen_population(chromosomeNum, geneNum):
         matrix.append(chromosome)
     return matrix
 
+# calculate chromosome fitness
+def cal_fitness(population, dist, time_cost, route_time, play_time, time_window):
+    fitness = []
+    total_cost = []
+    days = len(route_time) - 1
+    for _, chromosome in enumerate(population):
+        cur_time = 0
+        acc_route_time = 0
+        day = 1
+        prev = 0
+        cost = 0
+        for i, cur in enumerate(chromosome):
+            # no solution
+            if day > days:
+                cost = -1
+                break
+            acc_route_time += time_cost[prev][cur] + play_time[cur]
+            returned_time = acc_route_time + time_cost[cur][0] + play_time[0]
+            if returned_time > route_time[day]:
+                day += 1
+                prev = 0
+                cur_time = 0
+                acc_route_time = time_cost[prev][cur] + play_time[cur]
+                returned_time = acc_route_time + time_cost[cur][0] + play_time[0]
+                # no solution
+                if returned_time > route_time[day]:
+                    cost = -1
+                    break
+            early, late = time_window[cur]
+            cur_time += play_time[prev] + time_cost[prev][cur]
+            cost += dist[prev][cur] + max(early - cur_time, 0, cur_time - late)
+            prev = cur
+            # last gene handle
+            if i == len(chromosome) - 1:
+                early, late = time_window[0]
+                cur_time += play_time[cur] + time_cost[cur][0]
+                cost += dist[prev][0] + max(early - cur_time, 0, cur_time - late)
+        fitness.append(1000 / cost)
+        total_cost.append(cost)
+    return fitness, total_cost
+
 # select chromosome
 def select(population, offspring_percent, selection_prob):
     parentsNum = round(offspring_percent * len(selection_prob) / 2)

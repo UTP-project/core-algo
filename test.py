@@ -1,7 +1,7 @@
 import random
 import copy
 from common import printList, printErrorMsg, printSuccessMsg
-from GA import rws, gen_population, select, crossover, mutation, gen_list
+from GA import rws, gen_population, select, crossover, mutation, cal_fitness, gen_list
 
 # generate chromosome matrix test
 def gcm_test():
@@ -25,7 +25,29 @@ def gcm_test():
         printList(m, name='matrix', prefix=indent)
         return
     printSuccessMsg('gcm')
-    
+
+# fitness calculate test
+def cal_fitness_test():
+    c_num = 3
+    g_num = 3
+    dist = [
+        [0, 0 ,0, 0],
+        [0, 30, 40, 70],
+        [0, 50, 90, 10],
+        [0, 50, 50, 60]
+    ]
+    time_cost = [
+        [0, 0 ,0, 0],
+        [0, 3, 4, 7],
+        [0, 5, 9, 1],
+        [0, 5, 5, 6]
+    ]
+    route_time = [0, 12, 12]
+    play_time = [0, 1, 2, 1.5]
+    time_window = [(0, 24), (1, 3), (7, 8), (2, 6)]
+    population = gen_population(c_num, g_num)
+    fitness, cost = cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
+    printSuccessMsg('calculate fitness')
 
 # generate rws list
 def rws_rand_list(num):
@@ -118,6 +140,7 @@ def mutation_test():
 
 def main():
     rws_test()
+    cal_fitness_test()
     gcm_test()
     select_test()
     crossover_test()
