@@ -23,9 +23,9 @@ def gen_population(chromosomeNum, geneNum):
 
 # select chromosome
 def select(population, offspring_percent, selection_prob):
-    offSpringNum = round(offspring_percent * len(selection_prob) / 2)
+    parentsNum = round(offspring_percent * len(selection_prob) / 2)
     parentList = []
-    for i in range(offSpringNum):
+    for i in range(parentsNum):
         dad = population[rws(selection_prob)].copy()
         mom = population[rws(selection_prob)].copy()
         parentList.append((dad, mom))
