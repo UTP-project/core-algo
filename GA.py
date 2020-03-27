@@ -143,6 +143,14 @@ def mutation(offspringList, mutation_prob = 0.5):
             swap_points.append(False)
     return swap_points
 
+# recovery excellent chromosome with sorted params
+def recovery(parents, parents_fitness, offspring, offspring_fitness, rate = 0.4):
+    recovery_num = round(len(parents) * rate)
+    for i in range(recovery_num):
+        offspring[-(i + 1)] = parents[i]
+        offspring_fitness[-(i + 1)] = parents_fitness[i]
+    return offspring, offspring_fitness
+
 # roulette wheel selection
 def rws(selection_prob):
     random.seed()

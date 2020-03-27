@@ -1,7 +1,7 @@
 import random
 import copy
 from common import printList, printErrorMsg, printSuccessMsg, sort2List
-from GA import rws, gen_population, select, crossover, mutation, cal_fitness, gen_list, main as ga
+from GA import rws, gen_population, select, crossover, mutation, cal_fitness, recovery, gen_list, main as ga
 
 # generate chromosome matrix test
 def gcm_test():
@@ -180,6 +180,21 @@ def sort_test():
             return
     printSuccessMsg('sort')
 
+def recovery_test():
+    p = [1, 2, 3, 4]
+    pf = [10, 9, 2 ,1]
+    o = [5, 6, 3, 4]
+    of = [4, 3, 2, 1]
+    e_o = [5, 6, 2, 1]
+    e_of = [4, 3, 9, 10]
+    o, of = recovery(p, pf, o, of, 0.4)
+    for i in range(len(o)):
+        if o[i] != e_o[i]:
+            printErrorMsg('recovery', 'offspring not right', e_o, o)
+        if of[i] != e_of[i]:
+            printErrorMsg('recovery', 'offspring fitness not right', e_of, of)
+    printSuccessMsg('recovery')
+
 def final_test():
     c_num = 3
     g_num = 3
@@ -209,6 +224,7 @@ def main():
     crossover_test()
     mutation_test()
     sort_test()
+    recovery_test()
     final_test()
 
 main()
