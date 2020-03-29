@@ -7,7 +7,7 @@ def main(dist, time_cost, route_time, play_time, time_window, offspring_percent,
     not_counted_time = 0
     days = len(route_time) - 1
     g_num = len(play_time) - 1
-    population = gen_population(g_num, g_num)
+    population = gen_population(max(g_num, 100), g_num)
     fitness, _ = cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
     fitness, population = sort2List(fitness, population, True)
     start_time = time.time()
