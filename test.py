@@ -1,5 +1,6 @@
 import random
 import copy
+import json
 from common import printList, printErrorMsg, printSuccessMsg, sort2List
 from GA import rws, gen_population, select, crossover, mutation, cal_fitness, recovery, gen_list, main as ga
 
@@ -28,25 +29,8 @@ def gcm_test():
 
 # fitness calculate test
 def cal_fitness_test():
-    c_num = 3
-    g_num = 3
-    dist = [
-        [0, 0 ,0, 0],
-        [0, 0, 40, 70],
-        [0, 50, 0, 10],
-        [0, 50, 50, 0]
-    ]
-    time_cost = [
-        [0, 0 ,0, 0],
-        [0, 0, 4, 7],
-        [0, 5, 0, 1],
-        [0, 5, 5, 0]
-    ]
-    route_time = [0, 12, 12]
-    play_time = [0, 1, 2, 1.5]
-    time_window = [(0, 24), (1, 3), (7, 8), (2, 6)]
-    population = gen_population(c_num, g_num)
-    fitness, cost = cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
+    population = gen_population(test_data['g_num'], test_data['g_num'])
+    fitness, cost = cal_fitness(population, test_data['dist'], test_data['time_cost'], test_data['route_time'], test_data['play_time'], test_data['time_window'])
     printSuccessMsg('calculate fitness')
 
 # generate rws list
@@ -196,25 +180,8 @@ def recovery_test():
     printSuccessMsg('recovery')
 
 def final_test():
-    c_num = 3
-    g_num = 3
-    dist = [
-        [0, 0 ,0, 0],
-        [0, 0, 40, 70],
-        [0, 50, 0, 10],
-        [0, 50, 50, 0]
-    ]
-    time_cost = [
-        [0, 0 ,0, 0],
-        [0, 0, 4, 7],
-        [0, 5, 0, 1],
-        [0, 5, 5, 0]
-    ]
-    route_time = [0, 12, 12]
-    play_time = [0, 1, 2, 1.5]
-    time_window = [(0, 24), (1, 3), (7, 8), (2, 6)]
-    population, fitness = ga(dist, time_cost, route_time, play_time, time_window, 1, 0.4, 10)
-    print(population, fitness)
+    print()
+    population, fitness = ga(test_data['dist'], test_data['time_cost'], test_data['route_time'], test_data['play_time'], test_data['time_window'], 1, recovery_rate, interation)
 
 def main():
     rws_test()
@@ -226,6 +193,15 @@ def main():
     sort_test()
     recovery_test()
     final_test()
+
+
+filename = input('test data filename: ')
+test_data = ''
+with open(f'{filename}.in.json') as f:
+    test_data = json.load(f)
+
+recovery_rate = float(input('recovery rate: '))
+interation = int(input('interation: '))
 
 main()
     
