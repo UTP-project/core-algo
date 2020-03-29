@@ -197,8 +197,10 @@ def final_test():
     unzipped_fitness = [*zip(*fitness)]
     best_fitness = unzipped_fitness[0]
     worst_fitness = unzipped_fitness[-1]
-    # plt.plot(generation, best_fitness)
-    # plt.plot(generation, worst_fitness)
+    plt.plot(generation, best_fitness, c='#F9A825')
+    plt.plot(generation, worst_fitness)
+    plt.xlabel('generation')
+    plt.ylabel('fitness')
     plt.show()
 
 def main():
