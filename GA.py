@@ -76,7 +76,7 @@ def cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
                 acc_route_time = time_cost[prev][cur] + play_time[cur]
                 returned_time = acc_route_time + time_cost[cur][0] + play_time[0]
                 # no solution
-                if returned_time > route_time[day]:
+                if day > days or returned_time > route_time[day]:
                     cost = -1
                     break
             early, late = time_window[cur]
