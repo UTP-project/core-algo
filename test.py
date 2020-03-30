@@ -1,6 +1,7 @@
 import random
 import copy
 import json
+import numpy as np
 from common import printList, printErrorMsg, printSuccessMsg, sort2List
 from GA import (
     rws,
@@ -10,6 +11,7 @@ from GA import (
     mutation,
     cal_fitness,
     recovery,
+    cal_mutation_prob,
     gen_list,
 )
 
@@ -254,6 +256,19 @@ def recovery_test():
     printSuccessMsg("recovery")
 
 
+def cal_mutation_prob_test():
+    f = [1, 2, 3, 4]
+    tmp = np.array(f)
+    s = np.sqrt(((tmp - np.mean(tmp)) ** 2).sum() / (tmp.size - 1))
+    expect = 0.06 + 0.1 * (5 - s)
+    actual = cal_mutation_prob(f)
+
+    if expect != actual:
+        printErrorMsg("mutation probability", "not right", expect, actual)
+
+    printSuccessMsg("mutation probability")
+
+
 def main():
     rws_test()
     cal_fitness_test()
@@ -263,6 +278,7 @@ def main():
     mutation_test()
     sort_test()
     recovery_test()
+    cal_mutation_prob_test()
 
 
 filename = input("test data filename: ")

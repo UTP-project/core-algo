@@ -1,5 +1,6 @@
 import random
 import time
+import numpy as np
 from common import sort2List
 
 
@@ -30,7 +31,10 @@ def main(
 
         offspring, _ = crossover(parents)
 
-        mutation(offspring)
+        offspring_fitness, _ = cal_fitness(
+            offspring, dist, time_cost, route_time, play_time, time_window
+        )
+        mutation(offspring, cal_mutation_prob(offspring_fitness))
 
         offspring_fitness, _ = cal_fitness(
             offspring, dist, time_cost, route_time, play_time, time_window
@@ -78,7 +82,7 @@ def cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
     fitness = []
     total_cost = []
     days = len(route_time) - 1
-    for _, chromosome in enumerate(population):
+    for chromosome in population:
         cur_time = 0
         acc_route_time = 0
         day = 1
@@ -161,17 +165,21 @@ def crossover(parentList):
     return offspringList, cuts
 
 
+def cal_mutation_prob(fitness, min_prob=0.06, threshold=5):
+    return min_prob + 0.1 * (threshold - np.std(fitness, ddof=1))
+
+
 # mutation (swap)
-def mutation(offspringList, mutation_prob=0.5):
+def mutation(offsrping_list, mutation_prob=0.06):
     random.seed()
     swap_points = []
-    for i in range(len(offspringList)):
+    for offspring in offsrping_list:
         tmp = random.random()
         if tmp > mutation_prob:
-            swap_point = random.sample(range(len(offspringList[i])), 2)
-            offspringList[i][swap_point[0]], offspringList[i][swap_point[1]] = (
-                offspringList[i][swap_point[1]],
-                offspringList[i][swap_point[0]],
+            swap_point = random.sample(range(len(offspring)), 2)
+            offspring[swap_point[0]], offspring[swap_point[1]] = (
+                offspring[swap_point[1]],
+                offspring[swap_point[0]],
             )
             swap_points.append(swap_point)
         else:
