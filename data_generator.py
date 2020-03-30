@@ -29,6 +29,7 @@ play_time = np.round(
     np.random.rand(g_num + 1) * (play_time_high - play_time_low) + play_time_low,
     decimals,
 )
+play_time[0] = 0
 
 time_window = []
 for i in range(g_num + 1):
