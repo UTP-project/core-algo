@@ -1,11 +1,8 @@
 import random
 import copy
 import json
-import time
-import math
-import matplotlib.pyplot as plt
 from common import printList, printErrorMsg, printSuccessMsg, sort2List
-from GA import rws, gen_population, select, crossover, mutation, cal_fitness, recovery, gen_list, main as ga
+from GA import rws, gen_population, select, crossover, mutation, cal_fitness, recovery, gen_list
 
 # generate chromosome matrix test
 def gcm_test():
@@ -182,27 +179,6 @@ def recovery_test():
             printErrorMsg('recovery', 'offspring fitness not right', e_of, of)
     printSuccessMsg('recovery')
 
-def final_test():
-    print()
-    start_time = time.time()
-    res, not_counted_time = ga(test_data['dist'], test_data['time_cost'], test_data['route_time'], test_data['play_time'], test_data['time_window'], 1, recovery_rate, interation)
-    time_cost = time.time() - start_time - not_counted_time
-    print(f'{time_cost}s')
-    unzipped_res = [*zip(*res)]
-    fitness = unzipped_res[1]
-    generation = [*range(len(fitness))]
-    for xe, ye in zip(generation, fitness):
-        plt.scatter([xe] * len(ye), ye, s=1000 / (4 * (interation + 1)), c='#F44336')
-    # plt.xticks([*range(len(fitness))])
-    unzipped_fitness = [*zip(*fitness)]
-    best_fitness = unzipped_fitness[0]
-    worst_fitness = unzipped_fitness[-1]
-    plt.plot(generation, best_fitness, c='#F9A825')
-    plt.plot(generation, worst_fitness)
-    plt.xlabel('generation')
-    plt.ylabel('fitness')
-    plt.show()
-
 def main():
     rws_test()
     cal_fitness_test()
@@ -212,16 +188,12 @@ def main():
     mutation_test()
     sort_test()
     recovery_test()
-    final_test()
 
 
 filename = input('test data filename: ')
 test_data = ''
 with open(f'{filename}.in.json') as f:
     test_data = json.load(f)
-
-recovery_rate = float(input('recovery rate: '))
-interation = int(input('interation: '))
 
 main()
     
