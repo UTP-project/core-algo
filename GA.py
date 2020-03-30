@@ -2,18 +2,29 @@ import random
 import time
 from common import sort2List
 
-def main(dist, time_cost, route_time, play_time, time_window, offspring_percent, recovery_rate, iteration):
+
+def main(
+    dist,
+    time_cost,
+    route_time,
+    play_time,
+    time_window,
+    offspring_percent,
+    recovery_rate,
+    iteration,
+):
     res = []
     not_counted_time = 0
-    days = len(route_time) - 1
     g_num = len(play_time) - 1
     population = gen_population(max(g_num, 100), g_num)
-    fitness, _ = cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
+    fitness, _ = cal_fitness(
+        population, dist, time_cost, route_time, play_time, time_window
+    )
     fitness, population = sort2List(fitness, population, True)
     start_time = time.time()
     res.append((population.copy(), fitness.copy()))
     not_counted_time += time.time() - start_time
-    for i in range(1, iteration + 1):
+    for _ in range(1, iteration + 1):
         selection_prob = [x / sum(fitness) for x in fitness]
         parents = select(population, offspring_percent, selection_prob)
 
@@ -21,10 +32,14 @@ def main(dist, time_cost, route_time, play_time, time_window, offspring_percent,
 
         mutation(offspring)
 
-        offspring_fitness, _ = cal_fitness(offspring, dist, time_cost, route_time, play_time, time_window)
+        offspring_fitness, _ = cal_fitness(
+            offspring, dist, time_cost, route_time, play_time, time_window
+        )
         offspring_fitness, offspring = sort2List(offspring_fitness, offspring, True)
 
-        population, fitness = recovery(population, fitness, offspring, offspring_fitness, recovery_rate)
+        population, fitness = recovery(
+            population, fitness, offspring, offspring_fitness, recovery_rate
+        )
 
         fitness, population = sort2List(fitness, population, True)
 
@@ -33,6 +48,7 @@ def main(dist, time_cost, route_time, play_time, time_window, offspring_percent,
         not_counted_time += time.time() - start_time
 
     return res, not_counted_time
+
 
 # generate random list
 def gen_list(start, end):
@@ -43,17 +59,19 @@ def gen_list(start, end):
         random.shuffle(tmp)
     return tmp
 
+
 # generate chromosome matrix(population)
 def gen_population(chromosomeNum, geneNum):
     chromosomeSet = set()
     matrix = []
-    for i in range(chromosomeNum):
+    for _ in range(chromosomeNum):
         chromosome = gen_list(1, geneNum + 1)
         while str(chromosome) in chromosomeSet:
             chromosome = gen_list(1, geneNum + 1)
         chromosomeSet.add(str(chromosome))
         matrix.append(chromosome)
     return matrix
+
 
 # calculate chromosome fitness
 def cal_fitness(population, dist, time_cost, route_time, play_time, time_window):
@@ -101,11 +119,12 @@ def cal_fitness(population, dist, time_cost, route_time, play_time, time_window)
 def select(population, offspring_percent, selection_prob):
     parentsNum = round(offspring_percent * len(selection_prob) / 2)
     parentList = []
-    for i in range(parentsNum):
+    for _ in range(parentsNum):
         dad = population[rws(selection_prob)].copy()
         mom = population[rws(selection_prob)].copy()
         parentList.append((dad, mom))
     return parentList
+
 
 # crossover (partial-mapped)
 def crossover(parentList):
@@ -128,40 +147,46 @@ def crossover(parentList):
             while child1[j] in map1:
                 t = child1[j]
                 child1[j], child1[map1[t]] = child1[map1[t]], child1[j]
-                del(map1[t])
+                del map1[t]
         for k in range(len(child2)):
             if len(map2) == 0:
                 break
             while child2[k] in map2:
                 t = child2[k]
                 child2[k], child2[map2[t]] = child2[map2[t]], child2[k]
-                del(map2[t])
+                del map2[t]
         offspringList.append(child1)
         offspringList.append(child2)
         cuts.append(cut)
     return offspringList, cuts
 
+
 # mutation (swap)
-def mutation(offspringList, mutation_prob = 0.5):
+def mutation(offspringList, mutation_prob=0.5):
     random.seed()
     swap_points = []
     for i in range(len(offspringList)):
         tmp = random.random()
         if tmp > mutation_prob:
             swap_point = random.sample(range(len(offspringList[i])), 2)
-            offspringList[i][swap_point[0]], offspringList[i][swap_point[1]] = offspringList[i][swap_point[1]], offspringList[i][swap_point[0]]
+            offspringList[i][swap_point[0]], offspringList[i][swap_point[1]] = (
+                offspringList[i][swap_point[1]],
+                offspringList[i][swap_point[0]],
+            )
             swap_points.append(swap_point)
         else:
             swap_points.append(False)
     return swap_points
 
+
 # recovery excellent chromosome with sorted params
-def recovery(parents, parents_fitness, offspring, offspring_fitness, rate = 0.4):
+def recovery(parents, parents_fitness, offspring, offspring_fitness, rate=0.4):
     recovery_num = round(len(parents) * rate)
     for i in range(recovery_num):
         offspring[-(i + 1)] = parents[i]
         offspring_fitness[-(i + 1)] = parents_fitness[i]
     return offspring, offspring_fitness
+
 
 # roulette wheel selection
 def rws(selection_prob):
