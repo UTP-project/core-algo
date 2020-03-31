@@ -65,11 +65,13 @@ def create_time_window(g_num, everyday_time):
 def main():
     data = {}
 
-    data["g_num"] = create_gene_number()
-    data["dist"], data["time_cost"] = create_dist_and_time_matrix(data["g_num"])
-    data["days"], everyday_time, data["route_time"] = create_day_time()
-    data["play_time"] = create_play_time(data["g_num"])
-    data["time_window"] = create_time_window(data["g_num"], everyday_time)
+    data["gene_num"] = create_gene_number()
+    data["dist_matrix"], data["time_matrix"] = create_dist_and_time_matrix(
+        data["gene_num"]
+    )
+    data["days"], everyday_time, data["day_limit_time"] = create_day_time()
+    data["stay_time"] = create_play_time(data["gene_num"])
+    data["time_window"] = create_time_window(data["gene_num"], everyday_time)
 
     json_data = json.dumps(data, indent=4, cls=MyJSONEncoder)
 

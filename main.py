@@ -8,12 +8,12 @@ import json
 def create_data():
     data = {}
 
-    data["dist"] = test_data["dist"]
-    data["time_cost"] = test_data["time_cost"]
-    data["route_time"] = test_data["route_time"]
-    data["play_time"] = test_data["play_time"]
+    data["dist_matrix"] = test_data["dist_matrix"]
+    data["time_matrix"] = test_data["time_matrix"]
+    data["day_limit_time"] = test_data["day_limit_time"]
+    data["stay_time"] = test_data["stay_time"]
     data["time_window"] = test_data["time_window"]
-    data["days"] = len(data["route_time"]) - 1
+    data["days"] = test_data["days"] or len(data["day_limit_time"]) - 1
 
     return data
 
@@ -29,30 +29,30 @@ def print_solution(data, solution):
         return_time = 0
         plan = f"route for day {day}:\n"
 
-        while cur_id < len(solution) and return_time <= data["route_time"][day]:
-            day_time += data["time_cost"][su_prev][prev] + data["play_time"][prev]
+        while cur_id < len(solution) and return_time <= data["day_limit_time"][day]:
+            day_time += data["time_matrix"][su_prev][prev] + data["stay_time"][prev]
             plan += f" {prev} ->"
 
             cur = solution[cur_id]
             return_time = (
                 day_time
-                + data["time_cost"][prev][cur]
-                + data["play_time"][cur]
-                + data["time_cost"][cur][0]
+                + data["time_matrix"][prev][cur]
+                + data["stay_time"][cur]
+                + data["time_matrix"][cur][0]
             )
 
             su_prev = prev
             prev = cur
             cur_id += 1
 
-        if return_time > data["route_time"][day]:
-            day_time += data["time_cost"][su_prev][0]
+        if return_time > data["day_limit_time"][day]:
+            day_time += data["time_matrix"][su_prev][0]
             cur_id -= 1
         else:
             day_time += (
-                data["time_cost"][su_prev][prev]
-                + data["play_time"][prev]
-                + data["time_cost"][prev][0]
+                data["time_matrix"][su_prev][prev]
+                + data["stay_time"][prev]
+                + data["time_matrix"][prev][0]
             )
             plan += f" {prev} ->"
 
@@ -101,10 +101,10 @@ def main():
 
     # main
     res, not_counted_time, part_time = ga(
-        data["dist"],
-        data["time_cost"],
-        data["route_time"],
-        data["play_time"],
+        data["dist_matrix"],
+        data["time_matrix"],
+        data["day_limit_time"],
+        data["stay_time"],
         data["time_window"],
         1,
         recovery_rate,
