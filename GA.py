@@ -5,6 +5,7 @@ from common import sort2List
 
 
 def main(data, offspring_percent, recovery_rate, iteration):
+    random.seed()
     res = []
     not_counted_time = 0
     g_num = data["gene_num"]
@@ -74,7 +75,6 @@ def main(data, offspring_percent, recovery_rate, iteration):
 
 # generate random list
 def gen_list(start, end):
-    random.seed()
     tmp = []
     if start < end:
         tmp = [*range(start, end)]
@@ -173,7 +173,6 @@ def select(population, offspring_percent, selection_prob):
 
 # crossover (partial-mapped)
 def crossover(parentList):
-    random.seed()
     offspringList = []
     cuts = []
     for i in range(len(parentList)):
@@ -212,7 +211,6 @@ def cal_mutation_prob(fitness, min_prob=0.06, threshold=5):
 
 # mutation (swap)
 def mutation(offsrping_list, fitness, data, min_prob=0.06):
-    random.seed()
     swap_points = []
     mutation_prob = cal_mutation_prob(fitness)
     for i, offspring in enumerate(offsrping_list):
@@ -241,7 +239,6 @@ def recovery(parents, parents_fitness, offspring, offspring_fitness, rate=0.4):
 
 # roulette wheel selection
 def rws(selection_prob):
-    random.seed()
     rand = random.random()
     l = 0
     r = len(selection_prob)
