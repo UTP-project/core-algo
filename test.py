@@ -5,6 +5,7 @@ import numpy as np
 from common import printList, printErrorMsg, printSuccessMsg, sort2List
 from GA import (
     rws,
+    cal_select_prob,
     gen_population,
     select,
     crossover,
@@ -47,50 +48,60 @@ def cal_fitness_test():
     printSuccessMsg("calculate fitness")
 
 
-# generate rws list
-def rws_rand_list(num):
-    random.seed()
-    res = []
-    acc = 0
-    for i in range(num):
-        res.append(random.random())
-        acc += res[i]
-    for i in range(num):
-        res[i] = res[i] / acc
-    return res
-
-
 # roulette wheel selection test
 def rws_test():
-    random.seed()
-    num = random.randint(10, 100)
-    inputData = rws_rand_list(num)
-    outputData = rws(inputData)
-    info = {"inputData": inputData, "sum": sum(inputData)}
-    if 0 <= outputData < num:
-        printSuccessMsg("rws")
-    else:
-        printErrorMsg(
-            "rws", "index out of range", "0 <= output < input", outputData, info
-        )
+    inputData = [
+        [0.1, 0.3, 0.6, 0.9, 1],
+        [0.6, 0.7, 1],
+        [0.5, 0.6, 0.7, 0.8, 0.9, 1],
+        [0.001, 0.101, 0.378, 0.413, 0.4999, 0.9, 0.99, 1],
+        [0.001, 0.3333, 0.499, 0.5, 0.511, 0.677, 0.899, 0.901, 0.956, 0.991, 1],
+    ]
+    expect = [2, 0, 1, 5, 4]
+    for i, v in enumerate(inputData):
+        outputData = rws(v, 0.5)
+        info = {"inputData": v}
+        if outputData != expect[i]:
+            printErrorMsg("rws", "index not right", expect[i], outputData, info)
+    printSuccessMsg("rws")
+
+
+def cal_select_prob_test():
+    inputData = [[1, 2, 3, 4]]
+    expect = [[0.1, 0.3, 0.6, 1]]
+    for i, v in enumerate(inputData):
+        outputData = cal_select_prob(v)
+        info = {"inputData": v}
+        for j in range(len(v)):
+            if outputData[j] != expect[i][j]:
+                printErrorMsg(
+                    "select probability", "not right", expect[i], outputData, info
+                )
+    printSuccessMsg("select probability")
 
 
 def select_test():
     random.seed()
-    g_num = random.randint(10, 100)
-    c_num = g_num
     offspring_p = random.random()
-    selection_p = rws_rand_list(c_num)
-    m = gen_population(c_num, g_num)
-    parents = select(m, offspring_p, selection_p)
-    if len(parents) != round(offspring_p * c_num / 2):
-        indent = printErrorMsg(
-            "select",
-            "parents number is not right",
-            round(offspring_p * c_num / 2),
-            len(parents),
-        )
-        printList(parents, 3, name="parents list", prefix=indent)
+    selection_p = [
+        [0.1, 0.3, 0.6, 0.9, 1],
+        [0.6, 0.7, 1],
+        [0.5, 0.6, 0.7, 0.8, 0.9, 1],
+        [0.001, 0.101, 0.378, 0.413, 0.4999, 0.9, 0.99, 1],
+        [0.001, 0.3333, 0.499, 0.5, 0.511, 0.677, 0.899, 0.901, 0.956, 0.991, 1],
+    ]
+    for v in selection_p:
+        num = len(v)
+        m = gen_population(num, num)
+        parents = select(m, offspring_p, v)
+        if len(parents) != round(offspring_p * num / 2):
+            indent = printErrorMsg(
+                "select",
+                "parents number is not right",
+                round(offspring_p * num / 2),
+                len(parents),
+            )
+            printList(parents, 3, name="parents list", prefix=indent)
     printSuccessMsg("select")
 
 
@@ -264,6 +275,7 @@ def cal_mutation_prob_test():
 
 def main():
     rws_test()
+    cal_select_prob_test()
     cal_fitness_test()
     gcm_test()
     select_test()

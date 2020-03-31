@@ -154,9 +154,8 @@ def cal_select_prob(fitness):
     f_sum = sum(fitness)
     acc = 0
     for f in fitness:
-        acc = acc + f / f_sum
-        select_prob.append(acc)
-    select_prob[-1] = 1
+        acc += f
+        select_prob.append(acc / f_sum)
     return select_prob
 
 
@@ -238,8 +237,9 @@ def recovery(parents, parents_fitness, offspring, offspring_fitness, rate=0.4):
 
 
 # roulette wheel selection
-def rws(selection_prob):
-    rand = random.random()
+def rws(selection_prob, rand=0):
+    if rand == 0:
+        rand = random.random()
     l = 0
     r = len(selection_prob)
     while l < r:
