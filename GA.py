@@ -9,7 +9,7 @@ def main(data, offspring_percent, recovery_rate, iteration):
     not_counted_time = 0
     g_num = data["gene_num"]
     population = gen_population(max(g_num, 100), g_num)
-    fitness, _ = cal_fitness(population, data)
+    fitness = cal_population_fitness(population, data)
     fitness, population = sort2List(fitness, population, True)
     start_time = time.time()
     res.append((population.copy(), fitness.copy()))
@@ -37,8 +37,8 @@ def main(data, offspring_percent, recovery_rate, iteration):
 
         # mutation
         start_time = time.time()
-        offspring_fitness, _ = cal_fitness(offspring, data)
-        mutation(offspring, cal_mutation_prob(offspring_fitness))
+        offspring_fitness = cal_population_fitness(offspring, data)
+        mutation(offspring, offspring_fitness, data)
         run_time = time.time() - start_time
         part_time["mutation"] = (
             part_time["mutation"] + run_time if "mutation" in part_time else run_time
@@ -46,7 +46,6 @@ def main(data, offspring_percent, recovery_rate, iteration):
 
         # fitness calculate
         start_time = time.time()
-        offspring_fitness, _ = cal_fitness(offspring, data)
         offspring_fitness, offspring = sort2List(offspring_fitness, offspring, True)
         run_time = time.time() - start_time
         part_time["final_calculate"] = (
@@ -96,59 +95,57 @@ def gen_population(chromosomeNum, geneNum):
     return matrix
 
 
+# calculate all population fitness
+def cal_population_fitness(population, data, penalty_factor=1):
+    return [cal_fitness(chromosome, data, penalty_factor) for chromosome in population]
+
+
 # calculate chromosome fitness
-def cal_fitness(population, data, penalty_factor=1):
-    fitness = []
-    total_cost = []
-
-    for chromosome in population:
-        cur_id = 0
-        cost = 0
-        for day in range(1, data["days"] + 1):
-            prev = 0
-            arrive_time = 0
-            leave_time = 0
-            return_time = 0
-            while cur_id < len(chromosome):
-                cur = chromosome[cur_id]
-                # calculate return home time
-                return_time = (
-                    leave_time
-                    + data["time_matrix"][prev][cur]
-                    + data["stay_time"][cur]
-                    + data["time_matrix"][cur][0]
-                )
-                # return time exceed allowed time the day
-                if return_time > data["day_limit_time"][day]:
-                    break
-                # update params to current point
-                arrive_time += data["stay_time"][prev] + data["time_matrix"][prev][cur]
-                leave_time += data["time_matrix"][prev][cur] + data["stay_time"][cur]
-                early, late = data["time_window"][cur]
-                cost += (
-                    data["time_matrix"][prev][cur]
-                    + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
-                )
-                prev = cur
-                cur_id += 1
-
-            # all the gene has been calculated
-            if cur_id >= len(chromosome):
-                arrive_time += data["stay_time"][prev] + data["time_matrix"][prev][0]
-                early, late = data["time_window"][0]
-                cost += (
-                    data["time_matrix"][prev][0]
-                    + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
-                )
+def cal_fitness(chromosome, data, penalty_factor=1):
+    cur_id = 0
+    cost = 0
+    for day in range(1, data["days"] + 1):
+        prev = 0
+        arrive_time = 0
+        leave_time = 0
+        return_time = 0
+        while cur_id < len(chromosome):
+            cur = chromosome[cur_id]
+            # calculate return home time
+            return_time = (
+                leave_time
+                + data["time_matrix"][prev][cur]
+                + data["stay_time"][cur]
+                + data["time_matrix"][cur][0]
+            )
+            # return time exceed allowed time the day
+            if return_time > data["day_limit_time"][day]:
                 break
+            # update params to current point
+            arrive_time += data["stay_time"][prev] + data["time_matrix"][prev][cur]
+            leave_time += data["time_matrix"][prev][cur] + data["stay_time"][cur]
+            early, late = data["time_window"][cur]
+            cost += (
+                data["time_matrix"][prev][cur]
+                + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
+            )
+            prev = cur
+            cur_id += 1
 
-        # no solution
-        if cur_id < len(chromosome):
-            cost = -1
-        total_cost.append(cost)
-        fitness.append(1000 * data["gene_num"] / cost if cost > 0 else 0.001)
+        # all the gene has been calculated
+        if cur_id >= len(chromosome):
+            arrive_time += data["stay_time"][prev] + data["time_matrix"][prev][0]
+            early, late = data["time_window"][0]
+            cost += (
+                data["time_matrix"][prev][0]
+                + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
+            )
+            break
 
-    return fitness, total_cost
+    # no solution
+    if cur_id < len(chromosome):
+        cost = -1
+    return 1000 * data["gene_num"] / cost if cost > 0 else 0.001
 
 
 # select chromosome
@@ -202,10 +199,11 @@ def cal_mutation_prob(fitness, min_prob=0.06, threshold=5):
 
 
 # mutation (swap)
-def mutation(offsrping_list, mutation_prob=0.06):
+def mutation(offsrping_list, fitness, data, min_prob=0.06):
     random.seed()
     swap_points = []
-    for offspring in offsrping_list:
+    mutation_prob = cal_mutation_prob(fitness)
+    for i, offspring in enumerate(offsrping_list):
         tmp = random.random()
         if tmp > mutation_prob:
             swap_point = random.sample(range(len(offspring)), 2)
@@ -213,6 +211,7 @@ def mutation(offsrping_list, mutation_prob=0.06):
                 offspring[swap_point[1]],
                 offspring[swap_point[0]],
             )
+            fitness[i] = cal_fitness(offspring, data)
             swap_points.append(swap_point)
         else:
             swap_points.append(False)
