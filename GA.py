@@ -25,33 +25,67 @@ def main(
     start_time = time.time()
     res.append((population.copy(), fitness.copy()))
     not_counted_time += time.time() - start_time
+
+    part_time = {}
+
     for _ in range(1, iteration + 1):
+        # select
+        start_time = time.time()
         selection_prob = [x / sum(fitness) for x in fitness]
         parents = select(population, offspring_percent, selection_prob)
+        run_time = time.time() - start_time
+        part_time["select"] = (
+            part_time["select"] + run_time if "select" in part_time else run_time
+        )
 
+        # crossover
+        start_time = time.time()
         offspring, _ = crossover(parents)
+        run_time = time.time() - start_time
+        part_time["crossover"] = (
+            part_time["crossover"] + run_time if "crossover" in part_time else run_time
+        )
 
+        # mutation
+        start_time = time.time()
         offspring_fitness, _ = cal_fitness(
             offspring, dist, time_cost, route_time, play_time, time_window
         )
         mutation(offspring, cal_mutation_prob(offspring_fitness))
+        run_time = time.time() - start_time
+        part_time["mutation"] = (
+            part_time["mutation"] + run_time if "mutation" in part_time else run_time
+        )
 
+        # fitness calculate
+        start_time = time.time()
         offspring_fitness, _ = cal_fitness(
             offspring, dist, time_cost, route_time, play_time, time_window
         )
         offspring_fitness, offspring = sort2List(offspring_fitness, offspring, True)
+        run_time = time.time() - start_time
+        part_time["final_calculate"] = (
+            part_time["final_calculate"] + run_time
+            if "final_calculate" in part_time
+            else run_time
+        )
 
+        # recovery
+        start_time = time.time()
         population, fitness = recovery(
             population, fitness, offspring, offspring_fitness, recovery_rate
         )
-
         fitness, population = sort2List(fitness, population, True)
+        run_time = time.time() - start_time
+        part_time["recovery"] = (
+            part_time["recovery"] + run_time if "recovery" in part_time else run_time
+        )
 
         start_time = time.time()
         res.append((population.copy(), fitness.copy()))
         not_counted_time += time.time() - start_time
 
-    return res, not_counted_time
+    return res, not_counted_time, part_time
 
 
 # generate random list

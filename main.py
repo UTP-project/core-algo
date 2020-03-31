@@ -100,7 +100,7 @@ def main():
     start_time = time.time()
 
     # main
-    res, not_counted_time = ga(
+    res, not_counted_time, part_time = ga(
         data["dist"],
         data["time_cost"],
         data["route_time"],
@@ -118,6 +118,9 @@ def main():
     print_solution(data, res[-1][0][0])
 
     print(f"run time: {cal_time}s")
+
+    for k, v in part_time.items():
+        print(f"{k}:", f"{v}s")
 
     draw_plot(fitness)
 
