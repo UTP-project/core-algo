@@ -205,7 +205,7 @@ def mutation(offsrping_list, fitness, data, min_prob=0.06):
     mutation_prob = cal_mutation_prob(fitness)
     for i, offspring in enumerate(offsrping_list):
         tmp = random.random()
-        if tmp > mutation_prob:
+        if tmp < mutation_prob:
             swap_point = random.sample(range(len(offspring)), 2)
             offspring[swap_point[0]], offspring[swap_point[1]] = (
                 offspring[swap_point[1]],
