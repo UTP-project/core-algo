@@ -20,7 +20,7 @@ def main(data, offspring_percent, recovery_rate, iteration):
     for _ in range(1, iteration + 1):
         # select
         start_time = time.time()
-        selection_prob = [x / sum(fitness) for x in fitness]
+        selection_prob = cal_select_prob(fitness)
         parents = select(population, offspring_percent, selection_prob)
         run_time = time.time() - start_time
         part_time["select"] = (
@@ -148,6 +148,18 @@ def cal_fitness(chromosome, data, penalty_factor=1):
     return 1000 * data["gene_num"] / cost if cost > 0 else 0.001
 
 
+# calculate select probability (acc)
+def cal_select_prob(fitness):
+    select_prob = []
+    f_sum = sum(fitness)
+    acc = 0
+    for f in fitness:
+        acc = acc + f / f_sum
+        select_prob.append(acc)
+    select_prob[-1] = 1
+    return select_prob
+
+
 # select chromosome
 def select(population, offspring_percent, selection_prob):
     parentsNum = round(offspring_percent * len(selection_prob) / 2)
@@ -231,10 +243,20 @@ def recovery(parents, parents_fitness, offspring, offspring_fitness, rate=0.4):
 def rws(selection_prob):
     random.seed()
     rand = random.random()
-    acc = 0
-    for i, v in enumerate(selection_prob):
-        acc += v
-        if acc > rand:
-            return i
-    else:
-        len(selection_prob) - 1
+    l = 0
+    r = len(selection_prob)
+    while l < r:
+        pos = round((r - l) / 2) + l
+        if selection_prob[pos] < rand:
+            l = pos + 1
+        elif selection_prob[pos] == rand:
+            return pos + 1
+        else:
+            if pos > 0:
+                if selection_prob[pos - 1] <= rand:
+                    return pos
+                else:
+                    r = pos
+            else:
+                return pos
+    return l
