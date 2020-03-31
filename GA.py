@@ -4,23 +4,12 @@ import numpy as np
 from common import sort2List
 
 
-def main(
-    dist,
-    time_cost,
-    route_time,
-    play_time,
-    time_window,
-    offspring_percent,
-    recovery_rate,
-    iteration,
-):
+def main(data, offspring_percent, recovery_rate, iteration):
     res = []
     not_counted_time = 0
-    g_num = len(play_time) - 1
+    g_num = data["gene_num"]
     population = gen_population(max(g_num, 100), g_num)
-    fitness, _ = cal_fitness(
-        population, dist, time_cost, route_time, play_time, time_window
-    )
+    fitness, _ = cal_fitness(population, data)
     fitness, population = sort2List(fitness, population, True)
     start_time = time.time()
     res.append((population.copy(), fitness.copy()))
@@ -48,9 +37,7 @@ def main(
 
         # mutation
         start_time = time.time()
-        offspring_fitness, _ = cal_fitness(
-            offspring, dist, time_cost, route_time, play_time, time_window
-        )
+        offspring_fitness, _ = cal_fitness(offspring, data)
         mutation(offspring, cal_mutation_prob(offspring_fitness))
         run_time = time.time() - start_time
         part_time["mutation"] = (
@@ -59,9 +46,7 @@ def main(
 
         # fitness calculate
         start_time = time.time()
-        offspring_fitness, _ = cal_fitness(
-            offspring, dist, time_cost, route_time, play_time, time_window
-        )
+        offspring_fitness, _ = cal_fitness(offspring, data)
         offspring_fitness, offspring = sort2List(offspring_fitness, offspring, True)
         run_time = time.time() - start_time
         part_time["final_calculate"] = (
@@ -112,17 +97,14 @@ def gen_population(chromosomeNum, geneNum):
 
 
 # calculate chromosome fitness
-def cal_fitness(
-    population, dist, time_cost, route_time, play_time, time_window, penalty_factor=1
-):
+def cal_fitness(population, data, penalty_factor=1):
     fitness = []
     total_cost = []
-    days = len(route_time) - 1
 
     for chromosome in population:
         cur_id = 0
         cost = 0
-        for day in range(1, days + 1):
+        for day in range(1, data["days"] + 1):
             prev = 0
             arrive_time = 0
             leave_time = 0
@@ -132,19 +114,19 @@ def cal_fitness(
                 # calculate return home time
                 return_time = (
                     leave_time
-                    + time_cost[prev][cur]
-                    + play_time[cur]
-                    + time_cost[cur][0]
+                    + data["time_matrix"][prev][cur]
+                    + data["stay_time"][cur]
+                    + data["time_matrix"][cur][0]
                 )
                 # return time exceed allowed time the day
-                if return_time > route_time[day]:
+                if return_time > data["day_limit_time"][day]:
                     break
                 # update params to current point
-                arrive_time += play_time[prev] + time_cost[prev][cur]
-                leave_time += time_cost[prev][cur] + play_time[cur]
-                early, late = time_window[cur]
+                arrive_time += data["stay_time"][prev] + data["time_matrix"][prev][cur]
+                leave_time += data["time_matrix"][prev][cur] + data["stay_time"][cur]
+                early, late = data["time_window"][cur]
                 cost += (
-                    time_cost[prev][cur]
+                    data["time_matrix"][prev][cur]
                     + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
                 )
                 prev = cur
@@ -152,10 +134,10 @@ def cal_fitness(
 
             # all the gene has been calculated
             if cur_id >= len(chromosome):
-                arrive_time += play_time[prev] + time_cost[prev][0]
-                early, late = time_window[0]
+                arrive_time += data["stay_time"][prev] + data["time_matrix"][prev][0]
+                early, late = data["time_window"][0]
                 cost += (
-                    time_cost[prev][0]
+                    data["time_matrix"][prev][0]
                     + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
                 )
                 break
@@ -164,7 +146,7 @@ def cal_fitness(
         if cur_id < len(chromosome):
             cost = -1
         total_cost.append(cost)
-        fitness.append(1000 * len(time_window) / cost if cost > 0 else 0.001)
+        fitness.append(1000 * data["gene_num"] / cost if cost > 0 else 0.001)
 
     return fitness, total_cost
 

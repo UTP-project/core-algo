@@ -8,6 +8,7 @@ import json
 def create_data():
     data = {}
 
+    data["gene_num"] = test_data["gene_num"]
     data["dist_matrix"] = test_data["dist_matrix"]
     data["time_matrix"] = test_data["time_matrix"]
     data["day_limit_time"] = test_data["day_limit_time"]
@@ -100,16 +101,7 @@ def main():
     start_time = time.time()
 
     # main
-    res, not_counted_time, part_time = ga(
-        data["dist_matrix"],
-        data["time_matrix"],
-        data["day_limit_time"],
-        data["stay_time"],
-        data["time_window"],
-        1,
-        recovery_rate,
-        interation,
-    )
+    res, not_counted_time, part_time = ga(data, 1, recovery_rate, interation)
     cal_time = time.time() - start_time - not_counted_time
 
     unzipped_res = [*zip(*res)]
