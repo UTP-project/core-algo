@@ -112,44 +112,60 @@ def gen_population(chromosomeNum, geneNum):
 
 
 # calculate chromosome fitness
-def cal_fitness(population, dist, time_cost, route_time, play_time, time_window):
+def cal_fitness(
+    population, dist, time_cost, route_time, play_time, time_window, penalty_factor=1
+):
     fitness = []
     total_cost = []
     days = len(route_time) - 1
+
     for chromosome in population:
-        cur_time = 0
-        acc_route_time = 0
-        day = 1
-        prev = 0
+        cur_id = 0
         cost = 0
-        for i, cur in enumerate(chromosome):
-            # no solution
-            if day > days:
-                cost = -1
-                break
-            acc_route_time += time_cost[prev][cur] + play_time[cur]
-            returned_time = acc_route_time + time_cost[cur][0] + play_time[0]
-            if returned_time > route_time[day]:
-                day += 1
-                prev = 0
-                cur_time = 0
-                acc_route_time = time_cost[prev][cur] + play_time[cur]
-                returned_time = acc_route_time + time_cost[cur][0] + play_time[0]
-                # no solution
-                if day > days or returned_time > route_time[day]:
-                    cost = -1
+        for day in range(1, days + 1):
+            prev = 0
+            arrive_time = 0
+            leave_time = 0
+            return_time = 0
+            while cur_id < len(chromosome):
+                cur = chromosome[cur_id]
+                # calculate return home time
+                return_time = (
+                    leave_time
+                    + time_cost[prev][cur]
+                    + play_time[cur]
+                    + time_cost[cur][0]
+                )
+                # return time exceed allowed time the day
+                if return_time > route_time[day]:
                     break
-            early, late = time_window[cur]
-            cur_time += play_time[prev] + time_cost[prev][cur]
-            cost += dist[prev][cur] + max(early - cur_time, 0, cur_time - late)
-            prev = cur
-            # last gene handle
-            if i == len(chromosome) - 1:
+                # update params to current point
+                arrive_time += play_time[prev] + time_cost[prev][cur]
+                leave_time += time_cost[prev][cur] + play_time[cur]
+                early, late = time_window[cur]
+                cost += (
+                    time_cost[prev][cur]
+                    + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
+                )
+                prev = cur
+                cur_id += 1
+
+            # all the gene has been calculated
+            if cur_id >= len(chromosome):
+                arrive_time += play_time[prev] + time_cost[prev][0]
                 early, late = time_window[0]
-                cur_time += play_time[cur] + time_cost[cur][0]
-                cost += dist[prev][0] + max(early - cur_time, 0, cur_time - late)
-        fitness.append(1000 / cost)
+                cost += (
+                    time_cost[prev][0]
+                    + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
+                )
+                break
+
+        # no solution
+        if cur_id < len(chromosome):
+            cost = -1
         total_cost.append(cost)
+        fitness.append(1000 * len(time_window) / cost if cost > 0 else 0.001)
+
     return fitness, total_cost
 
 
