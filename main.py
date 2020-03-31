@@ -117,6 +117,8 @@ def main():
 
     print_solution(data, res[-1][0][0])
 
+    print("fitness:", fitness[-1][0], "\n")
+
     print(f"run time: {cal_time}s")
 
     for k, v in part_time.items():
