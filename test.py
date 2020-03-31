@@ -9,7 +9,7 @@ from GA import (
     select,
     crossover,
     mutation,
-    cal_fitness,
+    cal_population_fitness,
     recovery,
     cal_mutation_prob,
     gen_list,
@@ -42,15 +42,8 @@ def gcm_test():
 
 # fitness calculate test
 def cal_fitness_test():
-    population = gen_population(test_data["g_num"], test_data["g_num"])
-    cal_fitness(
-        population,
-        test_data["dist"],
-        test_data["time_cost"],
-        test_data["route_time"],
-        test_data["play_time"],
-        test_data["time_window"],
-    )
+    population = gen_population(test_data["gene_num"], test_data["gene_num"])
+    cal_population_fitness(population, test_data)
     printSuccessMsg("calculate fitness")
 
 
@@ -162,13 +155,13 @@ def mutation_test():
     random.seed()
     g_num = random.randint(10, 100)
     o_num = g_num
-    mutation_prob = random.random()
     offspringList = []
     for i in range(o_num):
         offspringList.append(gen_list(1, g_num + 1))
     o_offspringList = copy.deepcopy(offspringList)
+    fitness = gen_list(0, o_num)
 
-    sp = mutation(offspringList, mutation_prob)
+    sp = mutation(offspringList, fitness, test_data)
 
     for i in range(o_num):
         if sp[i]:
