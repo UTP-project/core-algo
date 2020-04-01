@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from GA import main as ga
+from GA import GA
 
 import time
 import json
@@ -101,7 +101,8 @@ def main():
     start_time = time.time()
 
     # main
-    res, not_counted_time, part_time = ga(data, 1, recovery_rate, interation)
+    ga = GA(data)
+    res, not_counted_time, part_time = ga.solve(1, recovery_rate, interation)
     cal_time = time.time() - start_time - not_counted_time
 
     unzipped_res = [*zip(*res)]

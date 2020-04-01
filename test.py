@@ -3,24 +3,14 @@ import copy
 import json
 import numpy as np
 from common import printList, printErrorMsg, printSuccessMsg, sort2List
-from GA import (
-    rws,
-    cal_select_prob,
-    gen_population,
-    select,
-    crossover,
-    mutation,
-    cal_population_fitness,
-    recovery,
-    cal_mutation_prob,
-    gen_list,
-)
+from GA import GA
 
 # generate chromosome matrix test
 def gcm_test():
+    ga = GA()
     g_num = random.randint(10, 100)
     c_num = g_num
-    m = gen_population(c_num, g_num)
+    m = ga.gen_population(c_num, g_num)
     c_set = set()
     info = {"c_num": c_num, "g_num": g_num}
     for i in range(len(m)):
@@ -41,15 +31,9 @@ def gcm_test():
     printSuccessMsg("gcm")
 
 
-# fitness calculate test
-def cal_fitness_test():
-    population = gen_population(test_data["gene_num"], test_data["gene_num"])
-    cal_population_fitness(population, test_data)
-    printSuccessMsg("calculate fitness")
-
-
 # roulette wheel selection test
 def rws_test():
+    ga = GA()
     inputData = [
         [0.1, 0.3, 0.6, 0.9, 1],
         [0.6, 0.7, 1],
@@ -59,7 +43,7 @@ def rws_test():
     ]
     expect = [2, 0, 1, 5, 4]
     for i, v in enumerate(inputData):
-        outputData = rws(v, 0.5)
+        outputData = ga.rws(v, 0.5)
         info = {"inputData": v}
         if outputData != expect[i]:
             printErrorMsg("rws", "index not right", expect[i], outputData, info)
@@ -67,10 +51,11 @@ def rws_test():
 
 
 def cal_select_prob_test():
+    ga = GA()
     inputData = [[1, 2, 3, 4]]
     expect = [[0.1, 0.3, 0.6, 1]]
     for i, v in enumerate(inputData):
-        outputData = cal_select_prob(v)
+        outputData = ga.cal_select_prob(v)
         info = {"inputData": v}
         for j in range(len(v)):
             if outputData[j] != expect[i][j]:
@@ -81,6 +66,7 @@ def cal_select_prob_test():
 
 
 def select_test():
+    ga = GA()
     random.seed()
     offspring_p = random.random()
     selection_p = [
@@ -92,8 +78,8 @@ def select_test():
     ]
     for v in selection_p:
         num = len(v)
-        m = gen_population(num, num)
-        parents = select(m, offspring_p, v)
+        m = ga.gen_population(num, num)
+        parents = ga.select(m, offspring_p, v)
         if len(parents) != round(offspring_p * num / 2):
             indent = printErrorMsg(
                 "select",
@@ -106,13 +92,14 @@ def select_test():
 
 
 def crossover_test():
+    ga = GA()
     random.seed()
     g_num = random.randint(10, 100)
     p_num = g_num
     parentList = []
     for i in range(p_num):
-        parentList.append((gen_list(1, g_num + 1), gen_list(1, g_num + 1)))
-    offspringList, cuts = crossover(parentList)
+        parentList.append((ga.gen_list(1, g_num + 1), ga.gen_list(1, g_num + 1)))
+    offspringList, cuts = ga.crossover(parentList)
 
     if len(offspringList) != p_num * 2:
         indent = printErrorMsg(
@@ -163,16 +150,17 @@ def crossover_test():
 
 
 def mutation_test():
+    ga = GA()
     random.seed()
     g_num = random.randint(10, 100)
     o_num = g_num
     offspringList = []
     for i in range(o_num):
-        offspringList.append(gen_list(1, g_num + 1))
+        offspringList.append(ga.gen_list(1, g_num + 1))
     o_offspringList = copy.deepcopy(offspringList)
-    fitness = gen_list(0, o_num)
+    fitness = ga.gen_list(0, o_num)
 
-    sp = mutation(offspringList, fitness, test_data)
+    sp = ga.mutation(offspringList, fitness)
 
     for i in range(o_num):
         if sp[i]:
@@ -245,13 +233,14 @@ def sort_test():
 
 
 def recovery_test():
+    ga = GA()
     p = [1, 2, 3, 4]
     pf = [10, 9, 2, 1]
     o = [5, 6, 3, 4]
     of = [4, 3, 2, 1]
     e_o = [5, 6, 2, 1]
     e_of = [4, 3, 9, 10]
-    o, of = recovery(p, pf, o, of, 0.4)
+    o, of = ga.recovery(p, pf, o, of, 0.4)
     for i in range(len(o)):
         if o[i] != e_o[i]:
             printErrorMsg("recovery", "offspring not right", e_o, o)
@@ -261,11 +250,12 @@ def recovery_test():
 
 
 def cal_mutation_prob_test():
+    ga = GA()
     f = [1, 2, 3, 4]
     tmp = np.array(f)
     s = np.sqrt(((tmp - np.mean(tmp)) ** 2).sum() / (tmp.size - 1))
     expect = 0.06 + 0.1 * (5 - s)
-    actual = cal_mutation_prob(f)
+    actual = ga.cal_mutation_prob(f)
 
     if expect != actual:
         printErrorMsg("mutation probability", "not right", expect, actual)
@@ -276,7 +266,6 @@ def cal_mutation_prob_test():
 def main():
     rws_test()
     cal_select_prob_test()
-    cal_fitness_test()
     gcm_test()
     select_test()
     crossover_test()
@@ -286,9 +275,5 @@ def main():
     cal_mutation_prob_test()
 
 
-filename = input("test data filename: ")
-test_data = ""
-with open(f"{filename}.in.json") as f:
-    test_data = json.load(f)
-
-main()
+if __name__ == "__main__":
+    main()
