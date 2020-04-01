@@ -5,7 +5,6 @@ from common import sort2List
 
 
 def main(data, offspring_percent, recovery_rate, iteration):
-    random.seed()
     res = []
     not_counted_time = 0
     g_num = data["gene_num"]
@@ -36,22 +35,31 @@ def main(data, offspring_percent, recovery_rate, iteration):
             part_time["crossover"] + run_time if "crossover" in part_time else run_time
         )
 
-        # mutation
+        # fitness calculate
         start_time = time.time()
         offspring_fitness = cal_population_fitness(offspring, data)
+        run_time = time.time() - start_time
+        part_time["fitness_calculate"] = (
+            part_time["fitness_calculate"] + run_time
+            if "fitness_calculate" in part_time
+            else run_time
+        )
+
+        # mutation
+        start_time = time.time()
         mutation(offspring, offspring_fitness, data)
         run_time = time.time() - start_time
         part_time["mutation"] = (
             part_time["mutation"] + run_time if "mutation" in part_time else run_time
         )
 
-        # fitness calculate
+        # fitness sort
         start_time = time.time()
         offspring_fitness, offspring = sort2List(offspring_fitness, offspring, True)
         run_time = time.time() - start_time
-        part_time["final_calculate"] = (
-            part_time["final_calculate"] + run_time
-            if "final_calculate" in part_time
+        part_time["fitness_sort"] = (
+            part_time["fitness_sort"] + run_time
+            if "fitness_sort" in part_time
             else run_time
         )
 

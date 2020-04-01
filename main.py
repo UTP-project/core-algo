@@ -72,18 +72,18 @@ def print_solution(data, solution):
 def draw_plot(fitness):
     # preprocessing
     generation = [*range(len(fitness))]
-    unzipped_fitness = [*zip(*fitness)]
-    best_fitness = unzipped_fitness[0]
-    worst_fitness = unzipped_fitness[-1]
+    # unzipped_fitness = [*zip(*fitness)]
+    # best_fitness = unzipped_fitness[0]
+    # worst_fitness = unzipped_fitness[-1]
 
     # draw scatter
     for xe, ye in zip(generation, fitness):
-        plt.scatter([xe] * len(ye), ye, s=1000 / (4 * (interation + 1)), c="#F44336")
+        plt.scatter([xe] * len(ye), ye, s=400 / (4 * (interation + 1)), c="#F44336")
     # plt.xticks([*range(len(fitness))])
 
     # draw best and worst fitness plot
-    plt.plot(generation, best_fitness, c="#F9A825")
-    plt.plot(generation, worst_fitness)
+    # plt.plot(generation, best_fitness, c="#F9A825")
+    # plt.plot(generation, worst_fitness)
 
     # set label of axis
     plt.xlabel("generation")
