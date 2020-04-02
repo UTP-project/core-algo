@@ -102,7 +102,7 @@ def main():
 
     # main
     ga = GA(data)
-    res, not_counted_time, part_time = ga.solve(1, recovery_rate, interation)
+    res, not_counted_time, part_time = ga.solve(1, recovery_rate, pfih_rate, interation)
     cal_time = time.time() - start_time - not_counted_time
 
     unzipped_res = [*zip(*res)]
@@ -126,6 +126,7 @@ with open(f"{filename}.in.json") as f:
     test_data = json.load(f)
 
 recovery_rate = float(input("recovery rate: "))
+pfih_rate = float(input("PFIH rate: "))
 interation = int(input("interation: "))
 
 if __name__ == "__main__":

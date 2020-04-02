@@ -15,10 +15,10 @@ class GA:
         self.stay_time = data.get("stay_time")
         self.time_window = data.get("time_window")
 
-    def solve(self, offspring_percent, recovery_rate, iteration):
+    def solve(self, offspring_percent, recovery_rate, pfih_rate=0, iteration=500):
         res = []
         not_counted_time = 0
-        population = self.gen_population(max(self.gene_num, 100), self.gene_num)
+        population = self.gen_population(100, self.gene_num, pfih_rate)
         fitness = self.cal_population_fitness(population)
         fitness, population = sort2List(fitness, population, True)
         start_time = time.time()
@@ -96,6 +96,48 @@ class GA:
 
         return res, not_counted_time, part_time
 
+    def pfih(self, penalty_factor=1):
+        ind = []
+        remain_id = [*range(1, self.gene_num + 1)]
+        random.shuffle(remain_id)
+        prev = 0
+        cur_time = 0
+        leave_time = 0
+        while len(ind) < self.gene_num:
+            min_id = 0
+            min_additional_cost = float("inf")
+            # calculate additional_cost[prev, :] of remain_id and find minimum
+            for cur in remain_id:
+                arrival_time = (
+                    cur_time + self.stay_time[prev] + self.time_matrix[prev][cur]
+                )
+                additional_cost = self.additional_cost(
+                    prev, cur, arrival_time, penalty_factor
+                )
+                if additional_cost < min_additional_cost:
+                    min_id = cur
+                    min_additional_cost = additional_cost
+            # check feasibility
+            return_time = self.time_matrix[min_id][0]
+            next_leave_time = (
+                leave_time
+                + self.time_matrix[prev][min_id]
+                + self.stay_time[min_id]
+                + return_time
+            )
+            if next_leave_time <= self.day_limit_time:
+                leave_time = next_leave_time - return_time
+                cur_time += self.stay_time[prev] + self.time_matrix[prev][min_id]
+                prev = min_id
+                ind.append(min_id)
+                # remove selected id
+                remain_id.remove(min_id)
+            else:
+                prev = 0
+                cur_time = 0
+                leave_time = 0
+        return ind
+
     # generate random list
     def gen_list(self, start, end):
         tmp = []
@@ -105,16 +147,27 @@ class GA:
         return tmp
 
     # generate chromosome matrix(population)
-    def gen_population(self, chromosomeNum, geneNum):
+    def gen_population(self, chromosomeNum, geneNum, pfih_rate=0):
+        pfih_num = round(pfih_rate * chromosomeNum)
         chromosomeSet = set()
         matrix = []
-        for _ in range(chromosomeNum):
+        for _ in range(chromosomeNum - pfih_num):
             chromosome = self.gen_list(1, geneNum + 1)
             while str(chromosome) in chromosomeSet:
                 chromosome = self.gen_list(1, geneNum + 1)
             chromosomeSet.add(str(chromosome))
             matrix.append(chromosome)
+        for _ in range(pfih_num):
+            matrix.append(self.pfih())
         return matrix
+
+    # calculate additional cost
+    def additional_cost(self, prev, cur, cur_time, penalty_factor):
+        early, late = self.time_window[cur]
+        return (
+            self.time_matrix[prev][cur]
+            + max(early - cur_time, 0, cur_time - late) * penalty_factor
+        )
 
     # calculate all population fitness
     def cal_population_fitness(self, population, penalty_factor=1):
@@ -132,17 +185,13 @@ class GA:
             sub_route_cost = 0
             for cur in sub_route:
                 arrival_time += self.stay_time[prev] + self.time_matrix[prev][cur]
-                early, late = self.time_window[cur]
-                sub_route_cost += (
-                    self.time_matrix[prev][cur]
-                    + max(early - arrival_time, 0, arrival_time - late) * penalty_factor
+                sub_route_cost += self.additional_cost(
+                    prev, cur, arrival_time, penalty_factor
                 )
                 prev = cur
             arrival_time += self.stay_time[prev] + self.time_matrix[prev][0]
-            early, late = self.time_window[0]
-            sub_route_cost += (
-                self.time_matrix[prev][0]
-                + max(early - arrival_time, 0, arrival_time - late) * penalty_factor
+            sub_route_cost += self.additional_cost(
+                prev, 0, arrival_time, penalty_factor
             )
             total_cost += sub_route_cost
         return 1000 * self.gene_num / total_cost if total_cost > 0 else 0.001
