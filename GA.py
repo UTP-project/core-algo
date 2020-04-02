@@ -124,50 +124,57 @@ class GA:
 
     # calculate chromosome fitness
     def cal_fitness(self, chromosome, penalty_factor=1):
-        cur_id = 0
-        cost = 0
-        for day in range(1, self.days + 1):
+        route = self.chro2route(chromosome)
+        total_cost = 0
+        for sub_route in route:
             prev = 0
-            arrive_time = 0
-            leave_time = 0
-            return_time = 0
-            while cur_id < len(chromosome):
-                cur = chromosome[cur_id]
-                # calculate return home time
-                return_time = (
-                    leave_time
-                    + self.time_matrix[prev][cur]
-                    + self.stay_time[cur]
-                    + self.time_matrix[cur][0]
-                )
-                # return time exceed allowed time the day
-                if return_time > self.day_limit_time[day]:
-                    break
-                # update params to current point
-                arrive_time += self.stay_time[prev] + self.time_matrix[prev][cur]
-                leave_time += self.time_matrix[prev][cur] + self.stay_time[cur]
+            arrival_time = 0
+            sub_route_cost = 0
+            for cur in sub_route:
+                arrival_time += self.stay_time[prev] + self.time_matrix[prev][cur]
                 early, late = self.time_window[cur]
-                cost += (
+                sub_route_cost += (
                     self.time_matrix[prev][cur]
-                    + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
+                    + max(early - arrival_time, 0, arrival_time - late) * penalty_factor
                 )
                 prev = cur
-                cur_id += 1
+            arrival_time += self.stay_time[prev] + self.time_matrix[prev][0]
+            early, late = self.time_window[0]
+            sub_route_cost += (
+                self.time_matrix[prev][0]
+                + max(early - arrival_time, 0, arrival_time - late) * penalty_factor
+            )
+            total_cost += sub_route_cost
+        return 1000 * self.gene_num / total_cost if total_cost > 0 else 0.001
 
-            # all the gene has been calculated
-            if cur_id >= len(chromosome):
-                arrive_time += self.stay_time[prev] + self.time_matrix[prev][0]
-                early, late = self.time_window[0]
-                cost += (
-                    self.time_matrix[prev][0]
-                    + max(early - arrive_time, 0, arrive_time - late) * penalty_factor
-                )
-                break
+    # convert chromosome to route
+    def chro2route(self, chromosome):
+        route = []
+        sub_route = []
+        prev = 0
+        leave_time = 0
+        day_limit_time = self.day_limit_time
+        for cur in chromosome:
+            # calculate return home time
+            return_time = self.time_matrix[cur][0]
+            next_leave_time = (
+                leave_time
+                + self.time_matrix[prev][cur]
+                + self.stay_time[cur]
+                + return_time
+            )
 
-        # no solution
-        if cur_id < len(chromosome):
-            cost = -1
-        return 1000 * self.gene_num / cost if cost > 0 else 0.001
+            # judge sub route end or not
+            if next_leave_time > day_limit_time:
+                route.append(sub_route)
+                sub_route = [cur]
+                leave_time = self.time_matrix[0][cur] + self.stay_time[cur]
+            else:
+                sub_route.append(cur)
+                leave_time = next_leave_time - return_time
+            # update prev id
+            prev = cur
+        return route
 
     # calculate select probability (acc)
     def cal_select_prob(self, fitness):

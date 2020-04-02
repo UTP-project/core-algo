@@ -14,7 +14,7 @@ def create_data():
     data["day_limit_time"] = test_data["day_limit_time"]
     data["stay_time"] = test_data["stay_time"]
     data["time_window"] = test_data["time_window"]
-    data["days"] = test_data["days"] or len(data["day_limit_time"]) - 1
+    data["days"] = test_data["days"]
 
     return data
 
@@ -30,7 +30,7 @@ def print_solution(data, solution):
         return_time = 0
         plan = f"route for day {day}:\n"
 
-        while cur_id < len(solution) and return_time <= data["day_limit_time"][day]:
+        while cur_id < len(solution) and return_time <= data["day_limit_time"]:
             day_time += data["time_matrix"][su_prev][prev] + data["stay_time"][prev]
             plan += f" {prev} ->"
 
@@ -46,7 +46,7 @@ def print_solution(data, solution):
             prev = cur
             cur_id += 1
 
-        if return_time > data["day_limit_time"][day]:
+        if return_time > data["day_limit_time"]:
             day_time += data["time_matrix"][su_prev][0]
             cur_id -= 1
         else:
