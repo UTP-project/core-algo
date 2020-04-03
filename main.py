@@ -103,7 +103,7 @@ def main():
     # main
     ga = GA(data)
     res, not_counted_time, part_time = ga.solve(
-        1, recovery_rate, pfih_rate, interation, rws_rate
+        1, recovery_rate, pop_num, pfih_rate, rws_rate, interation
     )
     cal_time = time.time() - start_time - not_counted_time
 
@@ -130,6 +130,7 @@ with open(f"{filename}.in.json") as f:
 recovery_rate = float(input("recovery rate: "))
 pfih_rate = float(input("PFIH rate: "))
 rws_rate = float(input("RWS rate: "))
+pop_num = int(input("population: "))
 interation = int(input("interation: "))
 
 if __name__ == "__main__":

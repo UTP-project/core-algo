@@ -16,11 +16,17 @@ class GA:
         self.time_window = data.get("time_window")
 
     def solve(
-        self, offspring_percent, recovery_rate, pfih_rate=0, iteration=500, rws_rate=0.5
+        self,
+        offspring_percent,
+        recovery_rate,
+        pop_num=50,
+        pfih_rate=0,
+        rws_rate=0.5,
+        iteration=500,
     ):
         res = []
         not_counted_time = 0
-        population = self.gen_population(100, self.gene_num, pfih_rate)
+        population = self.gen_population(pop_num, self.gene_num, pfih_rate)
         fitness = self.cal_population_fitness(population)
         fitness, population = sort2List(fitness, population, True)
         start_time = time.time()
