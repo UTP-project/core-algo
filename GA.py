@@ -15,7 +15,9 @@ class GA:
         self.stay_time = data.get("stay_time")
         self.time_window = data.get("time_window")
 
-    def solve(self, offspring_percent, recovery_rate, pfih_rate=0, iteration=500):
+    def solve(
+        self, offspring_percent, recovery_rate, pfih_rate=0, iteration=500, rws_rate=0.5
+    ):
         res = []
         not_counted_time = 0
         population = self.gen_population(100, self.gene_num, pfih_rate)
@@ -31,7 +33,7 @@ class GA:
             # select
             start_time = time.time()
             selection_prob = self.cal_select_prob(fitness)
-            parents = self.select(population, offspring_percent, selection_prob)
+            parents = self.select(population, fitness, selection_prob, rws_rate)
             run_time = time.time() - start_time
             part_time["select"] = (
                 part_time["select"] + run_time if "select" in part_time else run_time
@@ -238,14 +240,38 @@ class GA:
         return select_prob
 
     # select chromosome
-    def select(self, population, offspring_percent, selection_prob):
-        parentsNum = round(offspring_percent * len(selection_prob) / 2)
-        parentList = []
-        for _ in range(parentsNum):
-            dad = population[self.rws(selection_prob)].copy()
-            mom = population[self.rws(selection_prob)].copy()
-            parentList.append((dad, mom))
-        return parentList
+    def select(
+        self, population, fitness, selection_prob, rws_rate, offspring_percent=1
+    ):
+        pop = population.copy()
+        parent_list = []
+        rws_num = round(rws_rate * offspring_percent * len(pop) / 2)
+        # select by rws
+        if rws_rate > 0:
+            for _ in range(rws_num):
+                dad = pop[self.rws(selection_prob)].copy()
+                mom = pop[self.rws(selection_prob)].copy()
+                parent_list.append((dad, mom))
+        # select by tournament
+        tournament_num = len(pop) - round(len(parent_list) * 2)
+        if tournament_num > 0:
+            merged_list = [*zip(pop, fitness)]
+            dad_candidate = random.sample(merged_list, tournament_num)
+            mom_candidate = random.sample(merged_list, tournament_num)
+            for i in range(0, tournament_num, 2):
+                j = (i + 1) % tournament_num
+                dad = []
+                mom = []
+                if dad_candidate[i][1] > dad_candidate[j][1]:
+                    dad = dad_candidate[i][0].copy()
+                else:
+                    dad = dad_candidate[j][0].copy()
+                if mom_candidate[i][1] > mom_candidate[j][1]:
+                    mom = mom_candidate[i][0].copy()
+                else:
+                    mom = mom_candidate[j][0].copy()
+                parent_list.append((dad, mom))
+        return parent_list
 
     # crossover (partial-mapped)
     def crossover(self, parentList):
