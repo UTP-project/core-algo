@@ -223,6 +223,8 @@ class GA:
                 leave_time = next_leave_time - return_time
             # update prev id
             prev = cur
+        if len(sub_route) > 0:
+            route.append(sub_route)
         return route
 
     # calculate select probability (acc)
