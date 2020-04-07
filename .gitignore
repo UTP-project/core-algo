@@ -1,6 +1,7 @@
 # custom
 *.in.json
 *.out.json
+*.tbl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
