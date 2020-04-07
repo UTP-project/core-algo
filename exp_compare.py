@@ -1,4 +1,5 @@
 from GA import GA
+import alarm
 
 import json
 import time
@@ -83,6 +84,9 @@ def param_compare():
 
 def main():
     param_compare()
+
+    # notify program is finished
+    alarm.main()
 
 
 if __name__ == "__main__":
