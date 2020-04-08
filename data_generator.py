@@ -70,6 +70,7 @@ def main():
         data["gene_num"]
     )
     data["days"], everyday_time, data["day_limit_time"] = create_day_time()
+    data["day_limit_time"] = everyday_time
     data["stay_time"] = create_play_time(data["gene_num"])
     data["time_window"] = create_time_window(data["gene_num"], everyday_time)
 
