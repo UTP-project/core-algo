@@ -89,9 +89,10 @@ def method_compare():
         # offspring_percent, recovery_rate, pop_num=50, pfih_rate=0, rws_rate=0.5, iteration=500
         "SGA": [1, 0, 50, 0, 0.6, 600],
         "RGA": [1, 0.04, 50, 0, 0.6, 600],
-        "PRGA": [1, 0.04, 50, 0.2, 0.6, 600],
+        "GGA": [1, 0, 50, 0.2, 0.6, 600],
+        "GRGA": [1, 0.04, 50, 0.2, 0.6, 600],
     }
-    header = ["", "SGA", "RGA", "PRGA"]
+    header = ["", "SGA", "RGA", "GGA", "GRGA"]
     tabular_fitness = []
     tabular_runtime = []
     for filename in filenames:
