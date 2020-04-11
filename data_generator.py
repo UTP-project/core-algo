@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import json
+import math
 from common import MyJSONEncoder
 
 decimals = 2
@@ -10,21 +11,45 @@ def create_gene_number():
     return int(input("gene number: "))
 
 
-def create_dist_and_time_matrix(g_num):
-    dist_low = int(input("distance low number: "))
-    dist_high = int(input("distance high number: "))
+# create location of points
+def create_location(g_num):
+    lat_range = [-10, 10]
+    long_range = [-10, 10]
+    location_set = set("[0, 0]")
+    locations = [[0, 0]]
+    i = 0
+    while i < g_num:
+        lati = random.uniform(*lat_range)
+        longi = random.uniform(*long_range)
+        location = [longi, lati]
+        if str(location) not in location_set:
+            locations.append(location)
+            location_set.add(str(location))
+            i += 1
+    return locations
 
-    dist = np.random.randint(dist_low, dist_high, (g_num + 1, g_num + 1))
-    i = [*range(g_num + 1)]
-    dist[i, i] = 0
 
-    dist = np.round((dist + dist.T) / 2, decimals)
-
+def create_dist_and_time_matrix(locations):
     time_dist_ratio = float(input("time cost and distance ratio: "))
 
+    dist_matrix = []
+    time_matrix = []
+    for i in range(len(locations)):
+        i2j_dist = []
+        i2j_time = []
+        for j in range(len(locations)):
+            longi_diff = locations[i][0] - locations[j][0]
+            lati_diff = locations[i][1] - locations[j][1]
+            i2j_dist.append(math.sqrt(longi_diff ** 2 + lati_diff ** 2))
+            i2j_time.append(
+                math.sqrt(longi_diff ** 2 + lati_diff ** 2) * time_dist_ratio
+            )
+        dist_matrix.append(i2j_dist)
+        time_matrix.append(i2j_time)
+
     return (
-        dist.tolist(),
-        np.round(dist * time_dist_ratio, decimals).tolist(),
+        dist_matrix,
+        time_matrix,
     )
 
 
@@ -66,8 +91,9 @@ def main():
     data = {}
 
     data["gene_num"] = create_gene_number()
+    data["locations"] = create_location(data["gene_num"])
     data["dist_matrix"], data["time_matrix"] = create_dist_and_time_matrix(
-        data["gene_num"]
+        data["locations"]
     )
     data["days"], everyday_time, data["day_limit_time"] = create_day_time()
     data["day_limit_time"] = everyday_time
@@ -77,7 +103,7 @@ def main():
     json_data = json.dumps(data, indent=4, cls=MyJSONEncoder)
 
     out_filename = input("generate filename: ")
-    with open(f"{out_filename}.in.json", "w") as f:
+    with open(f"input_with_location/{out_filename}.in.json", "w") as f:
         f.write(json_data)
 
 

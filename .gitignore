@@ -4,6 +4,7 @@
 *.tbl
 *_tbl/
 input_data/
+input_with_location/
 
 .DS_Store
 
