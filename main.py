@@ -45,6 +45,7 @@ def print_solution(data, solution):
 
 
 def draw_plot(fitness):
+    plt.figure(1)
     # preprocessing
     generation = [*range(len(fitness))]
     # unzipped_fitness = [*zip(*fitness)]
@@ -68,6 +69,18 @@ def draw_plot(fitness):
     plt.show()
 
 
+# draw routes with locations
+def draw_route(data, solution):
+    plt.figure(2)
+
+    for sub_route in solution:
+        route_x = [data["locations"][point][0] for point in sub_route]
+        route_y = [data["locations"][point][1] for point in sub_route]
+        plt.plot(route_x, route_y)
+
+    plt.show()
+
+
 def main():
     # init data
     data = create_data()
@@ -85,7 +98,8 @@ def main():
     unzipped_res = [*zip(*res)]
     fitness = unzipped_res[1]
 
-    print_solution(data, ga.get_solution())
+    solution = ga.get_solution()
+    print_solution(data, solution)
 
     print("fitness:", fitness[-1][0], "\n")
 
@@ -95,6 +109,8 @@ def main():
         print(f"{k}:", f"{v}s")
 
     draw_plot(fitness)
+
+    draw_route(data, solution)
 
 
 filecode = input("test data filecode: ")
