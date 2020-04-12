@@ -8,6 +8,7 @@ from common import sort2List
 class GA:
     def __init__(self, data={}):
         self.gene_num = data.get("gene_num", 0)
+        self.locations = data.get("locations")
         self.days = data.get("days", 0)
         self.dist_matrix = data.get("dist_matrix")
         self.time_matrix = data.get("time_matrix")
@@ -102,7 +103,15 @@ class GA:
             res.append((population.copy(), fitness.copy()))
             not_counted_time += time.time() - start_time
 
+        self.solution = res[-1][0][0]
         return res, not_counted_time, part_time
+
+    def get_solution(self):
+        route = self.chro2route(self.solution)
+        with0_route = []
+        for sub_route in route:
+            with0_route.append([0, *sub_route, 0])
+        return with0_route
 
     def pfih(self, penalty_factor=1):
         ind = []

@@ -9,6 +9,7 @@ def create_data():
     data = {}
 
     data["gene_num"] = test_data["gene_num"]
+    data["locations"] = test_data["locations"]
     data["dist_matrix"] = test_data["dist_matrix"]
     data["time_matrix"] = test_data["time_matrix"]
     data["day_limit_time"] = test_data["day_limit_time"]
@@ -21,52 +22,26 @@ def create_data():
 
 def print_solution(data, solution):
     print()
-    total_time = 0
-    cur_id = 0
-    for day in range(1, data["days"] + 1):
-        su_prev = 0
+    total_cost_time = 0
+    in_time_window = []
+    for day, sub_route in enumerate(solution):
+        cost_time = 0
         prev = 0
-        day_time = 0
-        return_time = 0
-        plan = f"route for day {day}:\n"
-
-        while cur_id < len(solution) and return_time <= data["day_limit_time"]:
-            day_time += data["time_matrix"][su_prev][prev] + data["stay_time"][prev]
-            plan += f" {prev} ->"
-
-            cur = solution[cur_id]
-            return_time = (
-                day_time
-                + data["time_matrix"][prev][cur]
-                + data["stay_time"][cur]
-                + data["time_matrix"][cur][0]
-            )
-
-            su_prev = prev
+        for i, cur in enumerate(sub_route):
+            if i == 0:
+                prev = cur
+                continue
+            cost_time += data["stay_time"][prev] + data["time_matrix"][prev][cur]
+            if data["time_window"][cur][0] <= cost_time <= data["time_window"][cur][1]:
+                in_time_window.append(cur)
             prev = cur
-            cur_id += 1
+        total_cost_time += cost_time
+        print(f"The {day + 1} day:")
+        print(" -> ".join([str(x) for x in sub_route]))
+        print(f"cost time: {cost_time}h\n")
 
-        if return_time > data["day_limit_time"]:
-            day_time += data["time_matrix"][su_prev][0]
-            cur_id -= 1
-        else:
-            day_time += (
-                data["time_matrix"][su_prev][prev]
-                + data["stay_time"][prev]
-                + data["time_matrix"][prev][0]
-            )
-            plan += f" {prev} ->"
-
-        plan += " 0\n"
-        plan += f"time spent: {day_time}h\n"
-        print(plan)
-
-        total_time += day_time
-
-        if cur_id >= len(solution):
-            break
-
-    print(f"total time spent: {total_time}h\n")
+    print(f"total time spent: {total_cost_time}h")
+    print(f"point in time window: {in_time_window}\n")
 
 
 def draw_plot(fitness):
@@ -110,7 +85,7 @@ def main():
     unzipped_res = [*zip(*res)]
     fitness = unzipped_res[1]
 
-    print_solution(data, res[-1][0][0])
+    print_solution(data, ga.get_solution())
 
     print("fitness:", fitness[-1][0], "\n")
 
@@ -122,9 +97,9 @@ def main():
     draw_plot(fitness)
 
 
-filename = input("test data filename: ")
+filecode = input("test data filecode: ")
 test_data = {}
-with open(f"{filename}.in.json") as f:
+with open(f"input_with_location/test_{filecode}.in.json") as f:
     test_data = json.load(f)
 
 recovery_rate = float(input("recovery rate: "))
