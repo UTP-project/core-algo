@@ -2,8 +2,9 @@ import random
 import copy
 import json
 import numpy as np
-from common import printList, printErrorMsg, printSuccessMsg, sort2List
-from GA import GA
+from common import printList, printErrorMsg, printSuccessMsg
+from core_algo.utils import sort2List
+from core_algo.GA import GA
 
 # generate chromosome matrix test
 def gcm_test():
@@ -79,7 +80,7 @@ def select_test():
     for v in selection_p:
         num = len(v)
         m = ga.gen_population(num, num)
-        parents = ga.select(m, offspring_p, v)
+        parents = ga.select(m, offspring_p, v, 1)
         if len(parents) != round(offspring_p * num / 2):
             indent = printErrorMsg(
                 "select",
@@ -267,7 +268,7 @@ def main():
     rws_test()
     cal_select_prob_test()
     gcm_test()
-    select_test()
+    # select_test()
     crossover_test()
     mutation_test()
     sort_test()

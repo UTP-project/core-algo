@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from GA import GA
+from core_algo.GA import GA
 
 import time
 import json

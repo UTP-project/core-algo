@@ -2,7 +2,7 @@ import random
 import time
 import copy
 import numpy as np
-from common import sort2List
+from .utils import sort2List
 
 
 class GA:
