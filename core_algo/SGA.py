@@ -8,7 +8,9 @@ from .crossover import use_crossover
 
 
 class SGA:
-    def __init__(self, data={}, select_method="rws", crossover_method="pmx"):
+    def __init__(
+        self, data={}, select_method="rws", select_args=[], xo_method="pmx", xo_args=[]
+    ):
         # init basic data
         self.gene_num = data.get("gene_num", 0)
         self.days = data.get("days", 0)
@@ -20,7 +22,9 @@ class SGA:
 
         # init basic method
         self.select = use_select(select_method)
-        self.crossover = use_crossover(crossover_method)
+        self.select_args = select_args
+        self.crossover = use_crossover(xo_method)
+        self.xo_args = xo_args
 
     def solve(
         self, offspring_percent, recovery_rate, pop_num=50, pfih_rate=0, iteration=500,
@@ -48,7 +52,7 @@ class SGA:
         for _ in range(1, iteration + 1):
             # select
             start_time = time.time()
-            parents = self.select(population, fitness)
+            parents = self.select(population, fitness, *self.select_args)
             run_time = time.time() - start_time
             part_time["select"] = (
                 part_time["select"] + run_time if "select" in part_time else run_time
@@ -56,7 +60,7 @@ class SGA:
 
             # crossover
             start_time = time.time()
-            offspring = self.crossover(parents)
+            offspring = self.crossover(parents, *self.xo_args)
             run_time = time.time() - start_time
             part_time["crossover"] = (
                 part_time["crossover"] + run_time

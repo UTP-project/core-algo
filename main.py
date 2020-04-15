@@ -89,7 +89,7 @@ def main():
     start_time = time.time()
 
     # main
-    ga = SGA(data, select_method, crossover_method)
+    ga = SGA(data, select_method, select_args, crossover_method)
     res, not_counted_time, part_time = ga.solve(
         1, recovery_rate, pop_num, pfih_rate, interation
     )
@@ -119,6 +119,13 @@ with open(f"input_with_location/test_{filecode}.in.json") as f:
     test_data = json.load(f)
 
 select_method = input("choose a select method(*rws, tourn): ") or "rws"
+select_args = []
+set_size = 2
+elite_prob = 0.5
+if select_method == "tourn":
+    set_size = int(input("set size of tourn(*2): ") or 2)
+    elite_prob = float(input("elite probability of tourn(*0.5): ") or 0.5)
+    select_args = [set_size, elite_prob]
 crossover_method = input("choose a crossover method(*pmx): ") or "pmx"
 recovery_rate = float(input("recovery rate(*0.04): ") or 0.04)
 pfih_rate = float(input("PFIH rate(*0.2): ") or 0.2)
