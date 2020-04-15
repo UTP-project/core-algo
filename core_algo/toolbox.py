@@ -16,6 +16,18 @@ def map_sort(key, val, reverse=False):
     return list(unzipped[0]), list(unzipped[1])
 
 
+def adj_zip(arr, num=2):
+    res = []
+    if num >= 2:
+        if len(arr) % num == 0:
+            for i in range(0, len(arr), num):
+                tmp = []
+                for j in range(0, num):
+                    tmp.append(arr[i + j])
+                res.append(tuple(tmp))
+    return res
+
+
 # decode the encoded route
 def route_decode(day_limit_time, dur_matrix, stay_time, encoded_route):
     route = []
