@@ -3,6 +3,7 @@ import time
 import copy
 import numpy as np
 from . import toolbox
+from .crossover import pmx
 
 
 class SGA:
@@ -14,6 +15,8 @@ class SGA:
         self.day_limit_time = data.get("day_limit_time")
         self.stay_time = data.get("stay_time")
         self.time_window = data.get("time_window")
+
+        self.crossover = pmx
 
     def solve(
         self,
@@ -56,7 +59,7 @@ class SGA:
 
             # crossover
             start_time = time.time()
-            offspring, _ = self.crossover(parents)
+            offspring = self.crossover(parents)
             run_time = time.time() - start_time
             part_time["crossover"] = (
                 part_time["crossover"] + run_time
@@ -254,39 +257,6 @@ class SGA:
                     mom = mom_candidate[j][0].copy()
                 parent_list.append((dad, mom))
         return parent_list
-
-    # crossover (partial-mapped)
-    def crossover(self, parentList):
-        offspringList = []
-        cuts = []
-        for i in range(len(parentList)):
-            child1 = parentList[i][0].copy()
-            child2 = parentList[i][1].copy()
-            cut = random.sample(range(1, len(child1)), 2)
-            cut.sort()
-            map1 = {}
-            map2 = {}
-            for j in range(*cut):
-                map1[child2[j]] = j
-                map2[child1[j]] = j
-            for j in range(len(child1)):
-                if len(map1) == 0:
-                    break
-                while child1[j] in map1:
-                    t = child1[j]
-                    child1[j], child1[map1[t]] = child1[map1[t]], child1[j]
-                    del map1[t]
-            for k in range(len(child2)):
-                if len(map2) == 0:
-                    break
-                while child2[k] in map2:
-                    t = child2[k]
-                    child2[k], child2[map2[t]] = child2[map2[t]], child2[k]
-                    del map2[t]
-            offspringList.append(child1)
-            offspringList.append(child2)
-            cuts.append(cut)
-        return offspringList, cuts
 
     def cal_mutation_prob(self, fitness, min_prob=0.06, threshold=5):
         std = np.std(fitness, ddof=1)
