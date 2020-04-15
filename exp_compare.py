@@ -1,4 +1,4 @@
-from GA import GA
+from core_algo.SGA import SGA
 import alarm
 
 import sys
@@ -63,7 +63,7 @@ def param_compare():
         "40-rws": [1, 0.04, 50, 0, 0.4, 500],
         "20-rws": [1, 0.04, 50, 0, 0.2, 500],
     }
-    ga = GA(data)
+    ga = SGA(data)
     compare_res = {}
     base_res = average_res(ga, 100, *base_params)
     for k, params in compare_params_dict.items():
@@ -102,7 +102,7 @@ def method_compare():
             data = json.load(f)
 
         # init GA
-        ga = GA(data)
+        ga = SGA(data)
 
         base_fitness = 0
         base_runtime = 0
