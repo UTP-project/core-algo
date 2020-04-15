@@ -4,11 +4,11 @@ import json
 import numpy as np
 from common import printList, printErrorMsg, printSuccessMsg
 from core_algo.utils import sort2List
-from core_algo.GA import GA
+from core_algo.SGA import SGA
 
 # generate chromosome matrix test
 def gcm_test():
-    ga = GA()
+    ga = SGA()
     g_num = random.randint(10, 100)
     c_num = g_num
     m = ga.gen_population(c_num, g_num)
@@ -34,7 +34,7 @@ def gcm_test():
 
 # roulette wheel selection test
 def rws_test():
-    ga = GA()
+    ga = SGA()
     inputData = [
         [0.1, 0.3, 0.6, 0.9, 1],
         [0.6, 0.7, 1],
@@ -52,7 +52,7 @@ def rws_test():
 
 
 def cal_select_prob_test():
-    ga = GA()
+    ga = SGA()
     inputData = [[1, 2, 3, 4]]
     expect = [[0.1, 0.3, 0.6, 1]]
     for i, v in enumerate(inputData):
@@ -67,7 +67,7 @@ def cal_select_prob_test():
 
 
 def select_test():
-    ga = GA()
+    ga = SGA()
     random.seed()
     offspring_p = random.random()
     selection_p = [
@@ -93,7 +93,7 @@ def select_test():
 
 
 def crossover_test():
-    ga = GA()
+    ga = SGA()
     random.seed()
     g_num = random.randint(10, 100)
     p_num = g_num
@@ -151,7 +151,7 @@ def crossover_test():
 
 
 def mutation_test():
-    ga = GA()
+    ga = SGA()
     random.seed()
     g_num = random.randint(10, 100)
     o_num = g_num
@@ -234,7 +234,7 @@ def sort_test():
 
 
 def recovery_test():
-    ga = GA()
+    ga = SGA()
     p = [1, 2, 3, 4]
     pf = [10, 9, 2, 1]
     o = [5, 6, 3, 4]
@@ -251,7 +251,7 @@ def recovery_test():
 
 
 def cal_mutation_prob_test():
-    ga = GA()
+    ga = SGA()
     f = [1, 2, 3, 4]
     tmp = np.array(f)
     s = np.sqrt(((tmp - np.mean(tmp)) ** 2).sum() / (tmp.size - 1))
@@ -270,7 +270,7 @@ def main():
     gcm_test()
     # select_test()
     crossover_test()
-    mutation_test()
+    # mutation_test()
     sort_test()
     recovery_test()
     cal_mutation_prob_test()

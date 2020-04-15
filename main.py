@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from core_algo.GA import GA
+from core_algo.SGA import SGA
 
 import time
 import json
@@ -89,7 +89,7 @@ def main():
     start_time = time.time()
 
     # main
-    ga = GA(data)
+    ga = SGA(data)
     res, not_counted_time, part_time = ga.solve(
         1, recovery_rate, pop_num, pfih_rate, rws_rate, interation
     )

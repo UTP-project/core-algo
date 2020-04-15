@@ -5,7 +5,7 @@ import numpy as np
 from .utils import sort2List
 
 
-class GA:
+class SGA:
     def __init__(self, data={}):
         self.gene_num = data.get("gene_num", 0)
         self.days = data.get("days", 0)
