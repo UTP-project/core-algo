@@ -78,3 +78,12 @@ def tourn_select(population, fitness, set_size=2, elite_prob=0.5):
     if len(parents) % 2 != 0:
         parents.pop()
     parents = toolbox.adj_zip(parents, 2)
+    return parents
+
+
+def use_select(name):
+    if name == "rws":
+        return rws_select
+    elif name == "tourn":
+        return tourn_select
+    return rws_select

@@ -89,9 +89,9 @@ def main():
     start_time = time.time()
 
     # main
-    ga = SGA(data)
+    ga = SGA(data, select_method, crossover_method)
     res, not_counted_time, part_time = ga.solve(
-        1, recovery_rate, pop_num, pfih_rate, rws_rate, interation
+        1, recovery_rate, pop_num, pfih_rate, interation
     )
     cal_time = time.time() - start_time - not_counted_time
 
@@ -118,11 +118,12 @@ test_data = {}
 with open(f"input_with_location/test_{filecode}.in.json") as f:
     test_data = json.load(f)
 
-recovery_rate = float(input("recovery rate: "))
-pfih_rate = float(input("PFIH rate: "))
-rws_rate = float(input("RWS rate: "))
-pop_num = int(input("population: "))
-interation = int(input("interation: "))
+select_method = input("choose a select method(*rws, tourn): ") or "rws"
+crossover_method = input("choose a crossover method(*pmx): ") or "pmx"
+recovery_rate = float(input("recovery rate(*0.04): ") or 0.04)
+pfih_rate = float(input("PFIH rate(*0.2): ") or 0.2)
+pop_num = int(input("population(*50): ") or 50)
+interation = int(input("interation(*600): ") or 600)
 
 if __name__ == "__main__":
     main()

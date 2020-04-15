@@ -3,11 +3,13 @@ import time
 import copy
 import numpy as np
 from . import toolbox
-from .crossover import pmx
+from .select import use_select
+from .crossover import use_crossover
 
 
 class SGA:
-    def __init__(self, data={}):
+    def __init__(self, data={}, select_method="rws", crossover_method="pmx"):
+        # init basic data
         self.gene_num = data.get("gene_num", 0)
         self.days = data.get("days", 0)
         self.dist_matrix = data.get("dist_matrix")
@@ -16,16 +18,12 @@ class SGA:
         self.stay_time = data.get("stay_time")
         self.time_window = data.get("time_window")
 
-        self.crossover = pmx
+        # init basic method
+        self.select = use_select(select_method)
+        self.crossover = use_crossover(crossover_method)
 
     def solve(
-        self,
-        offspring_percent,
-        recovery_rate,
-        pop_num=50,
-        pfih_rate=0,
-        rws_rate=0.5,
-        iteration=500,
+        self, offspring_percent, recovery_rate, pop_num=50, pfih_rate=0, iteration=500,
     ):
         res = []
         not_counted_time = 0
@@ -50,8 +48,7 @@ class SGA:
         for _ in range(1, iteration + 1):
             # select
             start_time = time.time()
-            selection_prob = self.cal_select_prob(fitness)
-            parents = self.select(population, fitness, selection_prob, rws_rate)
+            parents = self.select(population, fitness)
             run_time = time.time() - start_time
             part_time["select"] = (
                 part_time["select"] + run_time if "select" in part_time else run_time
@@ -214,50 +211,6 @@ class SGA:
         )
         return 1000 * self.gene_num / total_cost if total_cost > 0 else 0.001
 
-    # calculate select probability (acc)
-    def cal_select_prob(self, fitness):
-        select_prob = []
-        f_sum = sum(fitness)
-        acc = 0
-        for f in fitness:
-            acc += f
-            select_prob.append(acc / f_sum)
-        return select_prob
-
-    # select chromosome
-    def select(
-        self, population, fitness, selection_prob, rws_rate, offspring_percent=1
-    ):
-        pop = population.copy()
-        parent_list = []
-        rws_num = round(rws_rate * offspring_percent * len(pop) / 2)
-        # select by rws
-        if rws_rate > 0:
-            for _ in range(rws_num):
-                dad = pop[self.rws(selection_prob)].copy()
-                mom = pop[self.rws(selection_prob)].copy()
-                parent_list.append((dad, mom))
-        # select by tournament
-        tournament_num = len(pop) - round(len(parent_list) * 2)
-        if tournament_num > 0:
-            merged_list = [*zip(pop, fitness)]
-            dad_candidate = random.sample(merged_list, tournament_num)
-            mom_candidate = random.sample(merged_list, tournament_num)
-            for i in range(0, tournament_num, 2):
-                j = (i + 1) % tournament_num
-                dad = []
-                mom = []
-                if dad_candidate[i][1] > dad_candidate[j][1]:
-                    dad = dad_candidate[i][0].copy()
-                else:
-                    dad = dad_candidate[j][0].copy()
-                if mom_candidate[i][1] > mom_candidate[j][1]:
-                    mom = mom_candidate[i][0].copy()
-                else:
-                    mom = mom_candidate[j][0].copy()
-                parent_list.append((dad, mom))
-        return parent_list
-
     def cal_mutation_prob(self, fitness, min_prob=0.06, threshold=5):
         std = np.std(fitness, ddof=1)
         return min_prob if std >= threshold else min_prob + 0.1 * (threshold - std)
@@ -289,25 +242,3 @@ class SGA:
             offspring[-(i + 1)] = parents[i]
             offspring_fitness[-(i + 1)] = parents_fitness[i]
         return offspring, offspring_fitness
-
-    # roulette wheel selection
-    def rws(self, selection_prob, rand=0):
-        if rand == 0:
-            rand = random.random()
-        l = 0
-        r = len(selection_prob)
-        while l < r:
-            pos = round((r - l) / 2) + l
-            if selection_prob[pos] < rand:
-                l = pos + 1
-            elif selection_prob[pos] == rand:
-                return pos + 1
-            else:
-                if pos > 0:
-                    if selection_prob[pos - 1] <= rand:
-                        return pos
-                    else:
-                        r = pos
-                else:
-                    return pos
-        return l

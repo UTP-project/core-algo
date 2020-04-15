@@ -2,8 +2,6 @@ import random
 
 # partial mapped crossover
 def pmx(parents):
-    if len(parents) < 3:
-        return parents
     offspring = []
     for parent in parents:
         child1 = parent[0].copy()
@@ -32,3 +30,9 @@ def pmx(parents):
         offspring.append(child1)
         offspring.append(child2)
     return offspring
+
+
+def use_crossover(name):
+    if name == "pmx":
+        return pmx
+    return pmx
