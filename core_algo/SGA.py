@@ -2,7 +2,7 @@ import random
 import time
 import copy
 import numpy as np
-from .utils import sort2List
+from . import toolbox
 
 
 class SGA:
@@ -37,7 +37,7 @@ class SGA:
 
         population = self.gen_population(pop_num, self.gene_num, pfih_rate)
         fitness = self.cal_population_fitness(population)
-        fitness, population = sort2List(fitness, population, True)
+        fitness, population = toolbox.map_sort(fitness, population, True)
         start_time = time.time()
         res.append((population.copy(), fitness.copy()))
         not_counted_time += time.time() - start_time
@@ -86,7 +86,9 @@ class SGA:
 
             # fitness sort
             start_time = time.time()
-            offspring_fitness, offspring = sort2List(offspring_fitness, offspring, True)
+            offspring_fitness, offspring = toolbox.map_sort(
+                offspring_fitness, offspring, True
+            )
             run_time = time.time() - start_time
             part_time["fitness_sort"] = (
                 part_time["fitness_sort"] + run_time
@@ -99,7 +101,7 @@ class SGA:
             population, fitness = self.recovery(
                 population, fitness, offspring, offspring_fitness, recovery_rate
             )
-            fitness, population = sort2List(fitness, population, True)
+            fitness, population = toolbox.map_sort(fitness, population, True)
             run_time = time.time() - start_time
             part_time["recovery"] = (
                 part_time["recovery"] + run_time
@@ -115,7 +117,9 @@ class SGA:
         return res, not_counted_time, part_time
 
     def get_solution(self):
-        route = self.chro2route(self.solution)
+        route = toolbox.route_decode(
+            self.day_limit_time, self.time_matrix, self.stay_time, self.solution
+        )
         with0_route = []
         for sub_route in route:
             with0_route.append([0, *sub_route, 0])
@@ -136,8 +140,13 @@ class SGA:
                 arrival_time = (
                     cur_time + self.stay_time[prev] + self.time_matrix[prev][cur]
                 )
-                additional_cost = self.additional_cost(
-                    prev, cur, arrival_time, penalty_factor
+                early, late = self.time_window[cur]
+                additional_cost = toolbox.additional_cost(
+                    self.time_matrix[prev][cur],
+                    early,
+                    late,
+                    arrival_time,
+                    penalty_factor,
                 )
                 if additional_cost < min_additional_cost:
                     min_id = cur
@@ -186,14 +195,6 @@ class SGA:
             matrix.append(self.pfih())
         return matrix
 
-    # calculate additional cost
-    def additional_cost(self, prev, cur, cur_time, penalty_factor):
-        early, late = self.time_window[cur]
-        return (
-            self.time_matrix[prev][cur]
-            + max(early - cur_time, 0, cur_time - late) * penalty_factor
-        )
-
     # calculate all population fitness
     def cal_population_fitness(self, population, penalty_factor=1):
         return [
@@ -202,55 +203,13 @@ class SGA:
 
     # calculate chromosome fitness
     def cal_fitness(self, chromosome, penalty_factor=1):
-        route = self.chro2route(chromosome)
-        total_cost = 0
-        for sub_route in route:
-            prev = 0
-            arrival_time = 0
-            sub_route_cost = 0
-            for cur in sub_route:
-                arrival_time += self.stay_time[prev] + self.time_matrix[prev][cur]
-                sub_route_cost += self.additional_cost(
-                    prev, cur, arrival_time, penalty_factor
-                )
-                prev = cur
-            arrival_time += self.stay_time[prev] + self.time_matrix[prev][0]
-            sub_route_cost += self.additional_cost(
-                prev, 0, arrival_time, penalty_factor
-            )
-            total_cost += sub_route_cost
+        route = toolbox.route_decode(
+            self.day_limit_time, self.time_matrix, self.stay_time, chromosome
+        )
+        total_cost = toolbox.cal_cost(
+            route, self.stay_time, self.time_matrix, self.time_window, penalty_factor
+        )
         return 1000 * self.gene_num / total_cost if total_cost > 0 else 0.001
-
-    # convert chromosome to route
-    def chro2route(self, chromosome):
-        route = []
-        sub_route = []
-        prev = 0
-        leave_time = 0
-        day_limit_time = self.day_limit_time
-        for cur in chromosome:
-            # calculate return home time
-            return_time = self.time_matrix[cur][0]
-            next_leave_time = (
-                leave_time
-                + self.time_matrix[prev][cur]
-                + self.stay_time[cur]
-                + return_time
-            )
-
-            # judge sub route end or not
-            if next_leave_time > day_limit_time:
-                route.append(sub_route)
-                sub_route = [cur]
-                leave_time = self.time_matrix[0][cur] + self.stay_time[cur]
-            else:
-                sub_route.append(cur)
-                leave_time = next_leave_time - return_time
-            # update prev id
-            prev = cur
-        if len(sub_route) > 0:
-            route.append(sub_route)
-        return route
 
     # calculate select probability (acc)
     def cal_select_prob(self, fitness):

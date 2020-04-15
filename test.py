@@ -3,7 +3,7 @@ import copy
 import json
 import numpy as np
 from common import printList, printErrorMsg, printSuccessMsg
-from core_algo.utils import sort2List
+from core_algo.toolbox import map_sort
 from core_algo.SGA import SGA
 
 # generate chromosome matrix test
@@ -187,7 +187,7 @@ def sort_test():
     val = ["a", "b", "d", "c"]
     key_expect = [1, 2, 3, 4]
     val_expect = ["c", "b", "a", "d"]
-    output_key, output_val = sort2List(key, val)
+    output_key, output_val = map_sort(key, val)
     for i in range(len(output_key)):
         if output_key[i] != key_expect[i]:
             printErrorMsg(
@@ -208,7 +208,7 @@ def sort_test():
             )
             return
 
-    output_key, output_val = sort2List(key, val, True)
+    output_key, output_val = map_sort(key, val, True)
     key_expect.reverse()
     val_expect.reverse()
     for i in range(len(output_key)):
