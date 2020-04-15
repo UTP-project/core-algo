@@ -8,7 +8,6 @@ from .utils import sort2List
 class GA:
     def __init__(self, data={}):
         self.gene_num = data.get("gene_num", 0)
-        self.locations = data.get("locations")
         self.days = data.get("days", 0)
         self.dist_matrix = data.get("dist_matrix")
         self.time_matrix = data.get("time_matrix")
@@ -322,7 +321,8 @@ class GA:
         return offspringList, cuts
 
     def cal_mutation_prob(self, fitness, min_prob=0.06, threshold=5):
-        return min_prob + 0.1 * (threshold - np.std(fitness, ddof=1))
+        std = np.std(fitness, ddof=1)
+        return min_prob if std >= threshold else min_prob + 0.1 * (threshold - std)
 
     # mutation (swap)
     def mutation(self, offsrping_list, fitness, min_prob=0.06):
