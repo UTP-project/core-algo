@@ -128,7 +128,7 @@ if select_method == "tourn":
     set_size = int(input("set size of tourn(*2): ") or 2)
     elite_prob = float(input("elite probability of tourn(*0.5): ") or 0.5)
     select_args = [set_size, elite_prob]
-crossover_method = input("choose a crossover method(*pmx): ") or "pmx"
+crossover_method = input("choose a crossover method(*pmx, cbx): ") or "pmx"
 recovery_rate = float(input("recovery rate(*0.04): ") or 0.04)
 pfih_rate = float(input("PFIH rate(*0.2): ") or 0.2)
 pop_num = int(input("population(*50): ") or 50)

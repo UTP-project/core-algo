@@ -24,6 +24,14 @@ class SGA:
         self.select = use_select(select_method)
         self.select_args = select_args
         self.crossover = use_crossover(xo_method)
+        if xo_method == "cbx":
+            xo_args = [
+                self.day_limit_time,
+                self.stay_time,
+                self.time_matrix,
+                self.time_window,
+                *xo_args,
+            ]
         self.xo_args = xo_args
 
     def solve(
