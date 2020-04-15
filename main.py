@@ -33,13 +33,15 @@ def print_solution(data, solution):
                 continue
             cost_time += data["stay_time"][prev] + data["time_matrix"][prev][cur]
             if data["time_window"][cur][0] <= cost_time <= data["time_window"][cur][1]:
-                in_time_window.append(cur)
+                if cur != 0:
+                    in_time_window.append(cur)
             prev = cur
         total_cost_time += cost_time
         print(f"The {day + 1} day:")
         print(" -> ".join([str(x) for x in sub_route]))
         print(f"cost time: {cost_time}h\n")
 
+    in_time_window.sort()
     print(f"total time spent: {total_cost_time}h")
     print(f"point in time window: {in_time_window}\n")
 
