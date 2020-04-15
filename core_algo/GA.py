@@ -26,6 +26,15 @@ class GA:
     ):
         res = []
         not_counted_time = 0
+        # handle points num less than pop_num
+        num = pop_num
+        for i in range(2, self.gene_num):
+            num /= i
+            if num < 1:
+                break
+        else:
+            pop_num = round(pop_num / num - 1)
+
         population = self.gen_population(pop_num, self.gene_num, pfih_rate)
         fitness = self.cal_population_fitness(population)
         fitness, population = sort2List(fitness, population, True)
