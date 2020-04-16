@@ -75,8 +75,12 @@ def cbx(
             day_limit_time, dur_matrix, stay_time, real_parents[parent_id + 1]
         )
         # random remove element for other
-        dad_remove = mom_route[random.randrange(len(mom_route))].copy()
-        mom_remove = dad_route[random.randrange(len(dad_route))].copy()
+        rand = random.randint(1, x_num)
+        remove_idx = random.sample(range(len(real_parents[parent_id])), rand)
+        dad_remove, mom_remove = [], []
+        for i in remove_idx:
+            dad_remove.append(real_parents[parent_id + 1][i])
+            mom_remove.append(real_parents[parent_id][i])
         # remove element of the route
         for remove_el in dad_remove:
             for sub_route in dad_route:
