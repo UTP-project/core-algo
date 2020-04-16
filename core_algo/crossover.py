@@ -2,14 +2,30 @@ import random
 
 from . import toolbox
 
+
+def preprocess(parents, xo_prob):
+    real_parents = []
+    offspring = []
+    for parent in parents:
+        rand = random.random()
+        if rand <= xo_prob:
+            real_parents.append(parent)
+        else:
+            offspring.append(parent)
+    # check odd length
+    if len(real_parents) % 2 != 0:
+        offspring.append(real_parents.pop())
+    return real_parents, offspring
+
+
 # pmx part
 #
 # partial mapped crossover
-def pmx(parents):
-    offspring = []
-    for parent in parents:
-        child1 = parent[0].copy()
-        child2 = parent[1].copy()
+def pmx(parents, xo_prob=0.8):
+    real_parents, offspring = preprocess(parents, xo_prob)
+    for parent_id in range(0, len(real_parents), 2):
+        child1 = real_parents[parent_id].copy()
+        child2 = real_parents[parent_id + 1].copy()
         cut = random.sample(range(1, len(child1)), 2)
         cut.sort()
         map1 = {}
@@ -47,27 +63,28 @@ def cbx(
     time_window,
     x_num=4,
     penalty_factor=1,
+    xo_prob=0.8,
 ):
-    offspring = []
-    rand = random.randint(0, x_num)
-    for parent in parents:
-        if len(parent[0]) < rand:
-            offspring.extend(parent)
+    real_parents, offspring = preprocess(parents, xo_prob)
+    for parent_id in range(0, len(real_parents), 2):
+        print(len(real_parents[parent_id]))
+        rand = random.randint(1, x_num)
+        if len(real_parents[parent_id]) < rand:
+            offspring.extend([real_parents[parent_id], real_parents[parent_id + 1]])
             continue
         # random cut position
-        cut = random.sample(range(0, len(parent[0])), rand)
-        cut.sort()
+        cut = random.sample(range(0, len(real_parents[parent_id])), rand)
         # record remove points
         rm_list1, rm_list2 = [], []
         for idx in cut:
-            rm_list2.append(parent[0][idx])
-            rm_list1.append(parent[1][idx])
+            rm_list2.append(real_parents[parent_id][idx])
+            rm_list1.append(real_parents[parent_id + 1][idx])
         child1, child2 = [], []
-        for i in range(len(parent[0])):
-            if parent[0][i] not in rm_list1:
-                child1.append(parent[0][i])
-            if parent[1][i] not in rm_list2:
-                child2.append(parent[1][i])
+        for i in range(len(real_parents[parent_id])):
+            if real_parents[parent_id][i] not in rm_list1:
+                child1.append(real_parents[parent_id][i])
+            if real_parents[parent_id + 1][i] not in rm_list2:
+                child2.append(real_parents[parent_id + 1][i])
         random.shuffle(rm_list1)
         random.shuffle(rm_list2)
 

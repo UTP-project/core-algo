@@ -45,7 +45,7 @@ def rws_select(population, fitness):
     for _ in range(0, pop_num, 2):
         dad = population[rws(select_prob)].copy()
         mom = population[rws(select_prob)].copy()
-        parents.append((dad, mom))
+        parents.extend([dad, mom])
     return parents
 
 
@@ -74,10 +74,6 @@ def tourn_select(population, fitness, set_size=2, elite_prob=0.5):
                     stop = pop_num - cur
                 idx = cur + random.randrange(0, stop)
                 parents.append(population[idx].copy())
-    # handle odd length
-    if len(parents) % 2 != 0:
-        parents.pop()
-    parents = toolbox.adj_zip(parents, 2)
     return parents
 
 
