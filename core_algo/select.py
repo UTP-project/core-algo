@@ -7,10 +7,10 @@ from . import toolbox
 # calculate selection probability
 def cal_select_prob(fitness):
     select_prob = []
-    f_sum = sum(fitness)
+    f_sum = sum([1 / f for f in fitness])
     acc = 0
     for f in fitness:
-        acc += f
+        acc += 1 / f
         select_prob.append(acc / f_sum)
     return select_prob
 
@@ -60,13 +60,13 @@ def tourn_select(population, fitness, set_size=2, elite_prob=0.5):
             rand = random.random()
             if rand <= elite_prob:
                 # select elite(the max fitness individual)
-                max_fitness_idx = cur
-                max_fitness = fitness[cur]
+                min_fitness_idx = cur
+                min_fitness = fitness[cur]
                 for offset in range(1, set_size):
-                    if cur + offset < pop_num and fitness[cur + offset] > max_fitness:
-                        max_fitness_idx = cur + offset
-                        max_fitness = fitness[cur + offset]
-                parents.append(population[max_fitness_idx].copy())
+                    if cur + offset < pop_num and fitness[cur + offset] < min_fitness:
+                        min_fitness_idx = cur + offset
+                        min_fitness = fitness[cur + offset]
+                parents.append(population[min_fitness_idx].copy())
             else:
                 # random pick one
                 stop = set_size

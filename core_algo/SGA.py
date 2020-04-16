@@ -50,7 +50,7 @@ class SGA:
 
         population = self.gen_population(pop_num, self.gene_num, pfih_rate)
         fitness = self.cal_population_fitness(population)
-        fitness, population = toolbox.map_sort(fitness, population, True)
+        fitness, population = toolbox.map_sort(fitness, population)
         start_time = time.time()
         res.append((population.copy(), fitness.copy()))
         not_counted_time += time.time() - start_time
@@ -99,7 +99,7 @@ class SGA:
             # fitness sort
             start_time = time.time()
             offspring_fitness, offspring = toolbox.map_sort(
-                offspring_fitness, offspring, True
+                offspring_fitness, offspring
             )
             run_time = time.time() - start_time
             part_time["fitness_sort"] = (
@@ -113,7 +113,7 @@ class SGA:
             population, fitness = self.recovery(
                 population, fitness, offspring, offspring_fitness, recovery_rate
             )
-            fitness, population = toolbox.map_sort(fitness, population, True)
+            fitness, population = toolbox.map_sort(fitness, population)
             run_time = time.time() - start_time
             part_time["recovery"] = (
                 part_time["recovery"] + run_time
@@ -221,7 +221,7 @@ class SGA:
         total_cost = toolbox.cal_cost(
             route, self.stay_time, self.time_matrix, self.time_window, penalty_factor
         )
-        return 1000 * self.gene_num / total_cost if total_cost > 0 else 0.001
+        return total_cost
 
     def cal_mutation_prob(self, fitness, min_prob=0.06, threshold=5):
         std = np.std(fitness, ddof=1)
