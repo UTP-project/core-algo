@@ -67,60 +67,114 @@ def cbx(
 ):
     real_parents, offspring = preprocess(parents, xo_prob)
     for parent_id in range(0, len(real_parents), 2):
-        print(len(real_parents[parent_id]))
-        rand = random.randint(1, x_num)
-        if len(real_parents[parent_id]) < rand:
-            offspring.extend([real_parents[parent_id], real_parents[parent_id + 1]])
-            continue
-        # random cut position
-        cut = random.sample(range(0, len(real_parents[parent_id])), rand)
-        # record remove points
-        rm_list1, rm_list2 = [], []
-        for idx in cut:
-            rm_list2.append(real_parents[parent_id][idx])
-            rm_list1.append(real_parents[parent_id + 1][idx])
-        child1, child2 = [], []
-        for i in range(len(real_parents[parent_id])):
-            if real_parents[parent_id][i] not in rm_list1:
-                child1.append(real_parents[parent_id][i])
-            if real_parents[parent_id + 1][i] not in rm_list2:
-                child2.append(real_parents[parent_id + 1][i])
-        random.shuffle(rm_list1)
-        random.shuffle(rm_list2)
+        # get cur route
+        dad_route = toolbox.route_decode(
+            day_limit_time, dur_matrix, stay_time, real_parents[parent_id]
+        )
+        mom_route = toolbox.route_decode(
+            day_limit_time, dur_matrix, stay_time, real_parents[parent_id + 1]
+        )
+        # random remove element for other
+        dad_remove = mom_route[random.randrange(len(mom_route))].copy()
+        mom_remove = dad_route[random.randrange(len(dad_route))].copy()
+        # remove element of the route
+        for remove_el in dad_remove:
+            for sub_route in dad_route:
+                if remove_el in sub_route:
+                    sub_route.remove(remove_el)
+                    break
 
-        # calculate child1 insert cost
-        for ins_targ in rm_list1:
-            min_cost1 = float("inf")
-            min_cost_idx1 = -1
-            for ins_idx in range(len(child1)):
-                tmp = child1.copy()
-                tmp.insert(ins_idx, ins_targ)
-                # calculate cost
-                route = toolbox.route_decode(day_limit_time, dur_matrix, stay_time, tmp)
-                cost = toolbox.cal_cost(
-                    route, stay_time, dur_matrix, time_window, penalty_factor
-                )
-                if cost < min_cost1:
-                    min_cost1 = cost
-                    min_cost_idx1 = ins_idx
-            child1.insert(min_cost_idx1, ins_targ)
+        for remove_el in mom_remove:
+            for sub_route in mom_route:
+                if remove_el in sub_route:
+                    sub_route.remove(remove_el)
+                    break
 
-        # calculate child2 insert cost
-        for ins_targ in rm_list2:
-            min_cost2 = float("inf")
-            min_cost_idx2 = -1
-            for ins_idx in range(len(child2)):
-                tmp = child2.copy()
-                tmp.insert(ins_idx, ins_targ)
-                # calculate cost
-                route = toolbox.route_decode(day_limit_time, dur_matrix, stay_time, tmp)
-                cost = toolbox.cal_cost(
-                    route, stay_time, dur_matrix, time_window, penalty_factor
-                )
-                if cost < min_cost2:
-                    min_cost2 = cost
-                    min_cost_idx2 = ins_idx
-            child2.insert(min_cost_idx2, ins_targ)
+        # check empty sub route
+        dad_route = list(filter(None, dad_route))
+        mom_route = list(filter(None, mom_route))
+        # shuffle the removed element
+        random.shuffle(dad_remove)
+        random.shuffle(mom_remove)
+        # try to insert the removed element
+        # insert to dad
+        dad_route_cost = [
+            toolbox.cal_cost(
+                [sub_route], stay_time, dur_matrix, time_window, penalty_factor
+            )
+            for sub_route in dad_route
+        ]
+        for ins_el in dad_remove:
+            dad_min_cost = float("inf")
+            dad_min_total_cost = float("inf")
+            dad_min_cost_pos = []
+            for sub_idx, sub_route in enumerate(dad_route):
+                for ins_idx in range(len(sub_route) + 1):
+                    tmp = sub_route.copy()
+                    tmp.insert(ins_idx, ins_el)
+                    # get new route after insert
+                    new_sub_route = toolbox.route_decode(
+                        day_limit_time, dur_matrix, stay_time, tmp
+                    )
+                    # calculate current cost
+                    cost = toolbox.cal_cost(
+                        new_sub_route,
+                        stay_time,
+                        dur_matrix,
+                        time_window,
+                        penalty_factor,
+                    )
+                    total_cost = cost
+                    for i in range(len(dad_route)):
+                        if i != sub_idx:
+                            total_cost += dad_route_cost[i]
+                    # check if min
+                    if total_cost < dad_min_total_cost:
+                        dad_min_cost = cost
+                        dad_min_total_cost = total_cost
+                        dad_min_cost_pos = [sub_idx, ins_idx]
+            dad_route[dad_min_cost_pos[0]].insert(dad_min_cost_pos[1], ins_el)
+            dad_route_cost[dad_min_cost_pos[0]] = dad_min_cost
+        child1 = [el for sub_route in dad_route for el in sub_route]
+        # insert to mom
+        mom_route_cost = [
+            toolbox.cal_cost(
+                [sub_route], stay_time, dur_matrix, time_window, penalty_factor
+            )
+            for sub_route in mom_route
+        ]
+        for ins_el in mom_remove:
+            mom_min_cost = float("inf")
+            mom_min_total_cost = float("inf")
+            mom_min_cost_pos = []
+            for sub_idx, sub_route in enumerate(mom_route):
+                for ins_idx in range(len(sub_route) + 1):
+                    tmp = sub_route.copy()
+                    tmp.insert(ins_idx, ins_el)
+                    # get new route after insert
+                    new_sub_route = toolbox.route_decode(
+                        day_limit_time, dur_matrix, stay_time, tmp
+                    )
+                    # calculate current cost
+                    cost = toolbox.cal_cost(
+                        new_sub_route,
+                        stay_time,
+                        dur_matrix,
+                        time_window,
+                        penalty_factor,
+                    )
+                    total_cost = cost
+                    for i in range(len(mom_route)):
+                        if i != sub_idx:
+                            total_cost += mom_route_cost[i]
+                    # check if min
+                    if total_cost < mom_min_total_cost:
+                        mom_min_cost = cost
+                        mom_min_total_cost = total_cost
+                        mom_min_cost_pos = [sub_idx, ins_idx]
+            mom_route[mom_min_cost_pos[0]].insert(mom_min_cost_pos[1], ins_el)
+            mom_route_cost[mom_min_cost_pos[0]] = mom_min_cost
+        child2 = [el for sub_route in mom_route for el in sub_route]
         offspring.extend([child1, child2])
     return offspring
 
