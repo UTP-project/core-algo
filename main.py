@@ -5,7 +5,7 @@ import time
 import json
 
 
-def create_data():
+def create_data(test_data):
     data = {}
 
     data["gene_num"] = test_data["gene_num"]
@@ -46,7 +46,7 @@ def print_solution(data, solution):
     print(f"point in time window: {in_time_window}\n")
 
 
-def draw_plot(fitness):
+def draw_plot(fitness, real_gen):
     plt.figure(1)
     # preprocessing
     generation = [*range(len(fitness))]
@@ -57,10 +57,7 @@ def draw_plot(fitness):
     # draw scatter
     for xe, ye in zip(generation, fitness):
         plt.scatter(
-            [xe] * len(ye),
-            ye,
-            s=400 / (4 * (iteration_param["max_gen"] + 1)),
-            c="#F44336",
+            [xe] * len(ye), ye, s=400 / (4 * (real_gen + 1)), c="#F44336",
         )
     # plt.xticks([*range(len(fitness))])
 
@@ -88,24 +85,17 @@ def draw_route(data, solution):
     plt.show()
 
 
-def main():
+def main(test_data, inst_params, iteration_params):
     # init data
-    data = create_data()
+    data = create_data(test_data)
+    inst_params["data"] = data
 
     # mark start time
     start_time = time.time()
 
     # main
-    ga = SGA(
-        recovery_rate,
-        pop_num,
-        pfih_rate,
-        data,
-        select_method,
-        select_args,
-        crossover_method,
-    )
-    res, not_counted_time, part_time = ga.solve(**iteration_param)
+    ga = SGA(**inst_params)
+    res, not_counted_time, part_time = ga.solve(**iteration_params)
     cal_time = time.time() - start_time - not_counted_time
 
     unzipped_res = [*zip(*res)]
@@ -121,41 +111,48 @@ def main():
     for k, v in part_time.items():
         print(f"{k}:", f"{v}s")
 
-    draw_plot(fitness)
+    draw_plot(fitness, iteration_params.get("max_gen", 300))
 
     draw_route(data, solution)
 
 
-filecode = input("test data filecode: ")
-test_data = {}
-with open(f"input_with_location/test_{filecode}.in.json") as f:
-    test_data = json.load(f)
+def get_params():
+    # init test data
+    # get test data from json file
+    filecode = input("test data filecode: ")
+    test_data = {}
+    with open(f"input_with_location/test_{filecode}.in.json") as f:
+        test_data = json.load(f)
 
-select_method = input("choose a select method(*rws, tourn): ") or "rws"
-select_args = []
-set_size = 2
-elite_prob = 0.5
-if select_method == "tourn":
-    set_size = int(input("set size of tourn(*2): ") or 2)
-    elite_prob = float(input("elite probability of tourn(*0.5): ") or 0.5)
-    select_args = [set_size, elite_prob]
-crossover_method = input("choose a crossover method(*pmx, cbx): ") or "pmx"
-recovery_rate = float(input("recovery rate(*0.04): ") or 0.04)
-pfih_rate = float(input("PFIH rate(*0.2): ") or 0.2)
-pop_num = int(input("population(*50): ") or 50)
+    # init instantiation params
+    inst_params = {}
+    inst_params["select_method"] = (
+        input("choose a select method(*rws, tourn): ") or "rws"
+    )
+    if inst_params["select_method"] == "tourn":
+        set_size = int(input("set size of tourn(*2): ") or 2)
+        elite_prob = float(input("elite probability of tourn(*0.5): ") or 0.5)
+        inst_params["select_args"] = [set_size, elite_prob]
+    inst_params["xo_method"] = input("choose a crossover method(*pmx, cbx): ") or "pmx"
+    inst_params["recovery_rate"] = float(input("recovery rate(*0.04): ") or 0.04)
+    inst_params["pfih_rate"] = float(input("PFIH rate(*0.2): ") or 0.2)
+    inst_params["pop_num"] = int(input("population(*50): ") or 50)
 
-# init GA solve params
-iteration_mode = (
-    input("choose a iteration mode(exact, *convergence, compare): ") or "convergence"
-)
-iteration_param = {}
-iteration_param["max_gen"] = int(input("max generation(*300): ") or 300)
-if iteration_mode == "convergence":
-    iteration_param["min_gen"] = int(input("min generation(*100): ") or 100)
-    iteration_param["observe_gen"] = int(input("observe generation(*50): ") or 50)
-elif iteration_mode == "compare":
-    iteration_param["compare_res"] = float(input("compare result: "))
+    # init GA solve params
+    iteration_params = {}
+    iteration_mode = (
+        input("choose a iteration mode(exact, *convergence, compare): ")
+        or "convergence"
+    )
+    iteration_params["max_gen"] = int(input("max generation(*300): ") or 300)
+    if iteration_mode == "convergence":
+        iteration_params["min_gen"] = int(input("min generation(*100): ") or 100)
+        iteration_params["observe_gen"] = int(input("observe generation(*50): ") or 50)
+    elif iteration_mode == "compare":
+        iteration_params["compare_res"] = float(input("compare result: "))
+
+    return test_data, inst_params, iteration_params
 
 
 if __name__ == "__main__":
-    main()
+    main(*get_params())
