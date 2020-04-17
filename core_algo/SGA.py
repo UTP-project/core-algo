@@ -9,9 +9,21 @@ from .crossover import use_crossover
 
 class SGA:
     def __init__(
-        self, data={}, select_method="rws", select_args=[], xo_method="pmx", xo_args=[]
+        self,
+        recovery_rate,
+        pop_num,
+        pfih_rate,
+        data={},
+        select_method="rws",
+        select_args=[],
+        xo_method="pmx",
+        xo_args=[],
     ):
-        # init basic data
+        # init basic param
+        self.recovery_rate = recovery_rate
+        self.pop_num = pop_num
+        self.pfih_rate = pfih_rate
+        # init calculate data
         self.gene_num = data.get("gene_num", 0)
         self.days = data.get("days", 0)
         self.dist_matrix = data.get("dist_matrix")
@@ -34,13 +46,16 @@ class SGA:
             ]
         self.xo_args = xo_args
 
-    def solve(
-        self, offspring_percent, recovery_rate, pop_num=50, pfih_rate=0, iteration=500,
-    ):
+    def solve(self, max_gen, min_gen=None, observe_gen=0, compare_res=None):
+        # generation param preprocess
+        if min_gen is None:
+            min_gen = max_gen
+
         res = []
         not_counted_time = 0
+
         # handle points num less than pop_num
-        num = pop_num
+        num = self.pop_num
         for i in range(2, self.gene_num):
             num /= i
             if num < 1:
@@ -48,16 +63,38 @@ class SGA:
         else:
             pop_num = round(pop_num / num - 1)
 
-        population = self.gen_population(pop_num, self.gene_num, pfih_rate)
+        # init population
+        population = self.gen_population()
         fitness = self.cal_population_fitness(population)
         fitness, population = toolbox.map_sort(fitness, population)
+
         start_time = time.time()
         res.append((population.copy(), fitness.copy()))
         not_counted_time += time.time() - start_time
 
         part_time = {}
 
-        for _ in range(1, iteration + 1):
+        # init observe generation param
+        cur_observe_gen = 0
+        last_best = 0
+
+        for gen in range(1, max_gen + 1):
+            # update convergence observation
+            cur_best = res[-1][1][0]
+            if cur_best == last_best:
+                cur_observe_gen += 1
+            else:
+                cur_observe_gen = 0
+            last_best = cur_best
+            # check terminate condition
+            # result has converged
+            if gen > min_gen and cur_observe_gen > observe_gen:
+                break
+            # reach the compare best
+            if compare_res and cur_best < compare_res:
+                break
+
+            # formal process
             # select
             start_time = time.time()
             parents = self.select(population, fitness, *self.select_args)
@@ -111,7 +148,7 @@ class SGA:
             # recovery
             start_time = time.time()
             population, fitness = self.recovery(
-                population, fitness, offspring, offspring_fitness, recovery_rate
+                population, fitness, offspring, offspring_fitness
             )
             fitness, population = toolbox.map_sort(fitness, population)
             run_time = time.time() - start_time
@@ -193,14 +230,14 @@ class SGA:
         return tmp
 
     # generate chromosome matrix(population)
-    def gen_population(self, chromosomeNum, geneNum, pfih_rate=0):
-        pfih_num = round(pfih_rate * chromosomeNum)
+    def gen_population(self):
+        pfih_num = round(self.pfih_rate * self.pop_num)
         chromosomeSet = set()
         matrix = []
-        for _ in range(chromosomeNum - pfih_num):
-            chromosome = self.gen_list(1, geneNum + 1)
+        for _ in range(self.pop_num - pfih_num):
+            chromosome = self.gen_list(1, self.gene_num + 1)
             while str(chromosome) in chromosomeSet:
-                chromosome = self.gen_list(1, geneNum + 1)
+                chromosome = self.gen_list(1, self.gene_num + 1)
             chromosomeSet.add(str(chromosome))
             matrix.append(chromosome)
         for _ in range(pfih_num):
@@ -246,10 +283,8 @@ class SGA:
         return swap_points
 
     # recovery excellent chromosome with sorted params
-    def recovery(
-        self, parents, parents_fitness, offspring, offspring_fitness, rate=0.4
-    ):
-        recovery_num = round(len(parents) * rate)
+    def recovery(self, parents, parents_fitness, offspring, offspring_fitness):
+        recovery_num = round(len(parents) * self.recovery_rate)
         for i in range(recovery_num):
             offspring[-(i + 1)] = parents[i]
             offspring_fitness[-(i + 1)] = parents_fitness[i]

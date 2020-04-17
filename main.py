@@ -56,7 +56,12 @@ def draw_plot(fitness):
 
     # draw scatter
     for xe, ye in zip(generation, fitness):
-        plt.scatter([xe] * len(ye), ye, s=400 / (4 * (interation + 1)), c="#F44336")
+        plt.scatter(
+            [xe] * len(ye),
+            ye,
+            s=400 / (4 * (iteration_param["max_gen"] + 1)),
+            c="#F44336",
+        )
     # plt.xticks([*range(len(fitness))])
 
     # draw best and worst fitness plot
@@ -91,10 +96,16 @@ def main():
     start_time = time.time()
 
     # main
-    ga = SGA(data, select_method, select_args, crossover_method)
-    res, not_counted_time, part_time = ga.solve(
-        1, recovery_rate, pop_num, pfih_rate, interation
+    ga = SGA(
+        recovery_rate,
+        pop_num,
+        pfih_rate,
+        data,
+        select_method,
+        select_args,
+        crossover_method,
     )
+    res, not_counted_time, part_time = ga.solve(**iteration_param)
     cal_time = time.time() - start_time - not_counted_time
 
     unzipped_res = [*zip(*res)]
@@ -132,7 +143,19 @@ crossover_method = input("choose a crossover method(*pmx, cbx): ") or "pmx"
 recovery_rate = float(input("recovery rate(*0.04): ") or 0.04)
 pfih_rate = float(input("PFIH rate(*0.2): ") or 0.2)
 pop_num = int(input("population(*50): ") or 50)
-interation = int(input("interation(*600): ") or 600)
+
+# init GA solve params
+iteration_mode = (
+    input("choose a iteration mode(exact, *convergence, compare): ") or "convergence"
+)
+iteration_param = {}
+iteration_param["max_gen"] = int(input("max generation(*300): ") or 300)
+if iteration_mode == "convergence":
+    iteration_param["min_gen"] = int(input("min generation(*100): ") or 100)
+    iteration_param["observe_gen"] = int(input("observe generation(*50): ") or 50)
+elif iteration_mode == "compare":
+    iteration_param["compare_res"] = float(input("compare result: "))
+
 
 if __name__ == "__main__":
     main()
