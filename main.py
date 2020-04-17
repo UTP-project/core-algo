@@ -90,13 +90,9 @@ def main(test_data, inst_params, iteration_params):
     data = create_data(test_data)
     inst_params["data"] = data
 
-    # mark start time
-    start_time = time.time()
-
     # main
     ga = SGA(**inst_params)
-    res, not_counted_time, part_time = ga.solve(**iteration_params)
-    cal_time = time.time() - start_time - not_counted_time
+    res, cal_time, last_gen = ga.solve(**iteration_params)
 
     unzipped_res = [*zip(*res)]
     fitness = unzipped_res[1]
@@ -105,13 +101,11 @@ def main(test_data, inst_params, iteration_params):
     print_solution(data, solution)
 
     print("fitness:", fitness[-1][0], "\n")
+    print("generation:", last_gen, "\n")
 
-    print(f"run time: {cal_time}s")
+    print(f"runtime: {cal_time}s")
 
-    for k, v in part_time.items():
-        print(f"{k}:", f"{v}s")
-
-    draw_plot(fitness, iteration_params.get("max_gen", 300))
+    draw_plot(fitness, last_gen)
 
     draw_route(data, solution)
 

@@ -23,6 +23,7 @@ class SGA:
         self.recovery_rate = recovery_rate
         self.pop_num = pop_num
         self.pfih_rate = pfih_rate
+
         # init calculate data
         self.gene_num = data.get("gene_num", 0)
         self.days = data.get("days", 0)
@@ -46,13 +47,22 @@ class SGA:
             ]
         self.xo_args = xo_args
 
-    def solve(self, max_gen, min_gen=None, observe_gen=0, compare_res=None):
+        # init final data
+        self.solution = []
+
+        # init experimental result data
+        self.solve_runtime = 0
+
+    def solve(self, max_gen, min_gen=None, observe_gen=0, compare_res=None, mode="dev"):
+        is_dev = mode == "dev"
+        if is_dev:
+            self.solve_runtime = time.time()
+
         # generation param preprocess
         if min_gen is None:
             min_gen = max_gen
 
         res = []
-        not_counted_time = 0
 
         # handle points num less than pop_num
         num = self.pop_num
@@ -68,11 +78,7 @@ class SGA:
         fitness = self.cal_population_fitness(population)
         fitness, population = toolbox.map_sort(fitness, population)
 
-        start_time = time.time()
         res.append((population.copy(), fitness.copy()))
-        not_counted_time += time.time() - start_time
-
-        part_time = {}
 
         # init observe generation param
         cur_observe_gen = 0
@@ -96,74 +102,38 @@ class SGA:
 
             # formal process
             # select
-            start_time = time.time()
             parents = self.select(population, fitness, *self.select_args)
-            run_time = time.time() - start_time
-            part_time["select"] = (
-                part_time["select"] + run_time if "select" in part_time else run_time
-            )
 
             # crossover
-            start_time = time.time()
             offspring = self.crossover(parents, *self.xo_args)
-            run_time = time.time() - start_time
-            part_time["crossover"] = (
-                part_time["crossover"] + run_time
-                if "crossover" in part_time
-                else run_time
-            )
 
             # fitness calculate
-            start_time = time.time()
             offspring_fitness = self.cal_population_fitness(offspring)
-            run_time = time.time() - start_time
-            part_time["fitness_calculate"] = (
-                part_time["fitness_calculate"] + run_time
-                if "fitness_calculate" in part_time
-                else run_time
-            )
 
             # mutation
-            start_time = time.time()
             self.mutation(offspring, offspring_fitness)
-            run_time = time.time() - start_time
-            part_time["mutation"] = (
-                part_time["mutation"] + run_time
-                if "mutation" in part_time
-                else run_time
-            )
 
             # fitness sort
-            start_time = time.time()
             offspring_fitness, offspring = toolbox.map_sort(
                 offspring_fitness, offspring
             )
-            run_time = time.time() - start_time
-            part_time["fitness_sort"] = (
-                part_time["fitness_sort"] + run_time
-                if "fitness_sort" in part_time
-                else run_time
-            )
 
             # recovery
-            start_time = time.time()
             population, fitness = self.recovery(
                 population, fitness, offspring, offspring_fitness
             )
+
+            # final sort
             fitness, population = toolbox.map_sort(fitness, population)
-            run_time = time.time() - start_time
-            part_time["recovery"] = (
-                part_time["recovery"] + run_time
-                if "recovery" in part_time
-                else run_time
-            )
 
-            start_time = time.time()
-            res.append((population.copy(), fitness.copy()))
-            not_counted_time += time.time() - start_time
+            self.solution = population[0]
 
-        self.solution = res[-1][0][0]
-        return res, not_counted_time, part_time
+            if is_dev:
+                res.append((population.copy(), fitness.copy()))
+
+        if is_dev:
+            self.solve_runtime = time.time() - self.solve_runtime
+            return res, self.solve_runtime, gen
 
     def get_solution(self):
         route = toolbox.route_decode(
