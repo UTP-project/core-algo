@@ -49,12 +49,21 @@ def param_compare():
         "select_method": "rws",
         "xo_method": xo_method,
     }
-    solve_params = {"max_gen": 1000, "min_gen": 100, "observe_gen": 100, "mode": "dev"}
+    solve_params = {
+        "convergence": {
+            "max_gen": 1000,
+            "min_gen": 100,
+            "observe_gen": 100,
+            "mode": "dev",
+        },
+        "exact-300": {"max_gen": 300, "mode": "dev"},
+    }
     compare_params_dict = {
         "base": {},
         "05-recovery": {"recovery_rate": 0.05},
         "15-recovery": {"recovery_rate": 0.15},
         "20-recovery": {"recovery_rate": 0.2},
+        "25-recovery": {"recovery_rate": 0.2},
         "30-pop": {"pop_num": 30},
         "40-pop": {"pop_num": 40},
         "60-pop": {"pop_num": 60},
@@ -62,31 +71,36 @@ def param_compare():
         "02-pfih": {"pfih_rate": 0.02},
         "04-pfih": {"pfih_rate": 0.04},
         "06-pfih": {"pfih_rate": 0.06},
+        "08-pfih": {"pfih_rate": 0.08},
+        "10-pfih": {"pfih_rate": 0.1},
     }
-    compare_res = []
-    base_res = []
-    for k, v in compare_params_dict.items():
-        inst_params = {**base_inst_params, **v}
-        ga = SGA(**inst_params)
-        cost, runtime = average_res(ga, average_times, **solve_params)
-        if k == "base":
-            base_res = [cost, runtime]
-            compare_res.append([k, cost, runtime])
-        else:
-            base_cost, base_runtime = base_res
-            compare_res.append(
-                [
-                    k,
-                    round((cost - base_cost) * 100 / base_cost, 2),
-                    round((runtime - base_runtime) * 100 / base_runtime, 2),
-                ]
-            )
-    headers = ["", "cost(%)", "runtime(%)"]
-    tbl = tabulate(compare_res, headers=headers)
-    print(tbl)
+    print_file = f"param_tbl/{filename}_{xo_method}_{round(time.time())}.tbl"
+    for iteration_mode, param in solve_params.items():
+        compare_res = []
+        base_res = []
+        for k, v in compare_params_dict.items():
+            inst_params = {**base_inst_params, **v}
+            ga = SGA(**inst_params)
+            cost, runtime = average_res(ga, average_times, **param)
+            if k == "base":
+                base_res = [cost, runtime]
+                compare_res.append([k, cost, runtime])
+            else:
+                base_cost, base_runtime = base_res
+                compare_res.append(
+                    [
+                        k,
+                        round((cost - base_cost) * 100 / base_cost, 2),
+                        round((runtime - base_runtime) * 100 / base_runtime, 2),
+                    ]
+                )
+        headers = ["", "cost(%)", "runtime(%)"]
+        tbl = tabulate(compare_res, headers=headers)
+        print(tbl)
 
-    with open(f"param_tbl/{filename}_{xo_method}_{round(time.time())}.tbl", "w") as f:
-        f.write(tbl)
+        with open(print_file, "a") as f:
+            f.write(f"{iteration_mode}\n")
+            f.write(f"{tbl}\n\n")
 
 
 # def method_compare():
