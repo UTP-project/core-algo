@@ -135,15 +135,19 @@ def get_params():
     # init GA solve params
     iteration_params = {}
     iteration_mode = (
-        input("choose a iteration mode(exact, *convergence, compare): ")
+        input("choose a iteration mode(exact, *convergence, compare, time): ")
         or "convergence"
     )
     iteration_params["max_gen"] = int(input("max generation(*300): ") or 300)
-    if iteration_mode == "convergence":
+    if iteration_mode == "compare":
+        iteration_params["compare_res"] = float(input("compare result: "))
+    elif iteration_mode == "time":
+        iteration_params["limit_time"] = float(input("limit time(*2.5): ") or 2.5)
+    elif iteration_mode == "exact":
+        pass  # do nothing
+    else:
         iteration_params["min_gen"] = int(input("min generation(*100): ") or 100)
         iteration_params["observe_gen"] = int(input("observe generation(*50): ") or 50)
-    elif iteration_mode == "compare":
-        iteration_params["compare_res"] = float(input("compare result: "))
 
     return test_data, inst_params, iteration_params
 

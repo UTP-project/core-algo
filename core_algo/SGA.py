@@ -53,7 +53,15 @@ class SGA:
         # init experimental result data
         self.solve_runtime = 0
 
-    def solve(self, max_gen, min_gen=None, observe_gen=0, compare_res=None, mode="dev"):
+    def solve(
+        self,
+        max_gen,
+        min_gen=None,
+        observe_gen=0,
+        compare_res=None,
+        limit_time=None,
+        mode="dev",
+    ):
         is_dev = mode == "dev"
         if is_dev:
             self.solve_runtime = time.time()
@@ -98,6 +106,9 @@ class SGA:
                 break
             # reach the compare best
             if compare_res and cur_best < compare_res:
+                break
+            # out of limit time
+            if limit_time and time.time() - self.solve_runtime > limit_time:
                 break
 
             # formal process
