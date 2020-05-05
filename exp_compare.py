@@ -38,43 +38,63 @@ def param_compare():
     filename = input("test data file: ")
     with open(f"input_with_location/test_{filename}.in.json") as f:
         data = json.load(f)
+
+    # get output filename
+    output_filename = input("output filename: ")
+
+    # init output file
+    print_file = f"param_tbl/{output_filename}_{filename}_{round(time.time())}.tbl"
+
+    # get params by input
+    select_method = input("choose a select method(*rws, tourn): ") or "rws"
+    select_args = []
+    if select_method == "tourn":
+        set_size = int(input("set size of tourn(*2): ") or 2)
+        select_args = [set_size, 1]
     xo_method = input("choose a crossover method(*pmx, cbx): ") or "pmx"
-    average_times = int(input("average times: ") or 100)
-    # offspring_percent, recovery_rate, pop_num=50, pfih_rate=0, rws_rate=0.5, iteration=500
+
+    # get average times
+    average_times = int(input("average times(*100): ") or 100)
+
+    # init base params while create new GA instance
     base_inst_params = {
-        "recovery_rate": 0.1,
+        "recovery_rate": 0,
         "pop_num": 50,
         "pfih_rate": 0,
         "data": data,
-        "select_method": "rws",
+        "select_method": select_method,
+        "select_args": select_args,
         "xo_method": xo_method,
     }
+
+    # init solve params
     solve_params = {
         "convergence": {
-            "max_gen": 1000,
+            "max_gen": 300,
             "min_gen": 100,
-            "observe_gen": 100,
+            "observe_gen": 80,
             "mode": "dev",
         },
         "exact-300": {"max_gen": 300, "mode": "dev"},
     }
+
+    # init compare params
     compare_params_dict = {
-        "base": {},
-        "05-recovery": {"recovery_rate": 0.05},
-        "15-recovery": {"recovery_rate": 0.15},
-        "20-recovery": {"recovery_rate": 0.2},
-        "25-recovery": {"recovery_rate": 0.2},
-        "30-pop": {"pop_num": 30},
-        "40-pop": {"pop_num": 40},
-        "60-pop": {"pop_num": 60},
-        "70-pop": {"pop_num": 70},
-        "02-pfih": {"pfih_rate": 0.02},
+        "00r-50p-00pf": {},
+        "02-recovery": {"recovery_rate": 0.02},
+        "06-recovery": {"recovery_rate": 0.06},
         "04-pfih": {"pfih_rate": 0.04},
-        "06-pfih": {"pfih_rate": 0.06},
         "08-pfih": {"pfih_rate": 0.08},
-        "10-pfih": {"pfih_rate": 0.1},
+        "12-pfih": {"pfih_rate": 0.12},
     }
-    print_file = f"param_tbl/{filename}_{xo_method}_{round(time.time())}.tbl"
+
+    #
+    if select_method == "tourn":
+        compare_params_dict["60-elite"] = {"select_args": [select_args[0], 0.6]}
+        compare_params_dict["70-elite"] = {"select_args": [select_args[0], 0.7]}
+        compare_params_dict["80-elite"] = {"select_args": [select_args[0], 0.8]}
+        compare_params_dict["90-elite"] = {"select_args": [select_args[0], 0.9]}
+
     for iteration_mode, param in solve_params.items():
         compare_res = []
         base_res = []
@@ -82,7 +102,7 @@ def param_compare():
             inst_params = {**base_inst_params, **v}
             ga = SGA(**inst_params)
             cost, runtime = average_res(ga, average_times, **param)
-            if k == "base":
+            if k == "00r-50p-00pf":
                 base_res = [cost, runtime]
                 compare_res.append([k, cost, runtime])
             else:
@@ -103,75 +123,96 @@ def param_compare():
             f.write(f"{tbl}\n\n")
 
 
-# def method_compare():
-#     # init test data file
-#     filenames = ["test_10_1", "test_20_1", "test_50_1", "test_100_1"]
-#     # init method params
-#     method_dict = {
-#         # offspring_percent, recovery_rate, pop_num=50, pfih_rate=0, rws_rate=0.5, iteration=500
-#         "SGA": [1, 0, 50, 0, 0.6, 600],
-#         "RGA": [1, 0.04, 50, 0, 0.6, 600],
-#         "GGA": [1, 0, 50, 0.2, 0.6, 600],
-#         "GRGA": [1, 0.04, 50, 0.2, 0.6, 600],
-#     }
-#     header = ["", "SGA", "RGA", "GGA", "GRGA"]
-#     tabular_fitness = []
-#     tabular_runtime = []
-#     for filename in filenames:
-#         # get test data filename
-#         data = {}
-#         with open(f"input_data/{filename}.in.json") as f:
-#             data = json.load(f)
+def method_compare():
+    # get test data filename
+    data = {}
+    filename = input("test data file: ")
+    with open(f"input_with_location/test_{filename}.in.json") as f:
+        data = json.load(f)
 
-#         # init GA
-#         ga = SGA(data)
+    # get output filename
+    output_filename = input("output filename: ")
 
-#         base_fitness = 0
-#         base_runtime = 0
-#         fitness_res = [filename]
-#         runtime_res = [filename]
-#         for k, params in method_dict.items():
-#             tmp = average_res(ga, 200, *params)
-#             if k == "SGA":
-#                 base_fitness = tmp[0]
-#                 base_runtime = tmp[1]
-#             fitness_res.append(
-#                 f"{round(tmp[0], 2)}({round((tmp[0] - base_fitness) * 100 / base_fitness, 1)}%)"
-#             )
-#             runtime_res.append(
-#                 f"{round(tmp[1], 2)}({round((tmp[1] - base_runtime) * 100 / base_runtime, 1)}%)"
-#             )
-#         tabular_fitness.append(fitness_res)
-#         tabular_runtime.append(runtime_res)
-#     # make a table of result
-#     fitness_table = tabulate(tabular_fitness, headers=header)
-#     runtime_table = tabulate(tabular_runtime, headers=header)
+    # init output file
+    print_file = f"method_tbl/{output_filename}_{filename}_{round(time.time())}.tbl"
 
-#     print(fitness_table)
-#     print("\n\n")
-#     print(runtime_table)
+    # get average times
+    average_times = int(input("average times(*100): ") or 100)
 
-#     with open(f"method_tbl/{round(time.time())}.tbl", "w") as f:
-#         f.write("fitness table\n")
-#         f.write(fitness_table)
-#         f.write("\n\n")
-#         f.write("runtime table\n")
-#         f.write(runtime_table)
+    # init base params while create new GA instance
+    base_inst_params = {
+        "recovery_rate": 0,
+        "pop_num": 50,
+        "pfih_rate": 0,
+        "data": data,
+        "select_method": "rws",
+        "select_args": [],
+        "xo_method": "pmx",
+    }
+
+    # init solve params
+    solve_params = {
+        "convergence": {
+            "max_gen": 300,
+            "min_gen": 100,
+            "observe_gen": 80,
+            "mode": "dev",
+        },
+        "exact-300": {"max_gen": 300, "mode": "dev"},
+    }
+
+    # init compare params
+    compare_params_dict = {
+        "rws-pmx": {},
+        "tourn-pmx": {"select_method": "tourn", "select_args": [4, 0.9]},
+        "rws-cbx": {"xo_method": "cbx"},
+        "tourn-cbx": {
+            "select_method": "tourn",
+            "select_args": [4, 0.9],
+            "xo_method": "cbx",
+        },
+    }
+
+    for iteration_mode, param in solve_params.items():
+        compare_res = []
+        base_res = []
+        for k, v in compare_params_dict.items():
+            inst_params = {**base_inst_params, **v}
+            ga = SGA(**inst_params)
+            cost, runtime = average_res(ga, average_times, **param)
+            if k == "rws-pmx":
+                base_res = [cost, runtime]
+                compare_res.append([k, cost, runtime])
+            else:
+                base_cost, base_runtime = base_res
+                compare_res.append(
+                    [
+                        k,
+                        round((cost - base_cost) * 100 / base_cost, 2),
+                        round((runtime - base_runtime) * 100 / base_runtime, 2),
+                    ]
+                )
+        headers = ["", "cost(%)", "runtime(%)"]
+        tbl = tabulate(compare_res, headers=headers)
+        print(tbl)
+
+        with open(print_file, "a") as f:
+            f.write(f"{iteration_mode}\n")
+            f.write(f"{tbl}\n\n")
 
 
 def main():
-    # if len(sys.argv) > 1:
-    #     if sys.argv[1] == "param":
-    #         param_compare()
-    #     elif sys.argv[1] == "method":
-    #         method_compare()
-    #     else:
-    #         param_compare()
-    #         method_compare()
-    # else:
-    #     param_compare()
-    #     method_compare()
-    param_compare()
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "param":
+            param_compare()
+        elif sys.argv[1] == "method":
+            method_compare()
+        else:
+            param_compare()
+            method_compare()
+    else:
+        param_compare()
+        method_compare()
 
     # notify program is finished
     alarm.main()

@@ -39,10 +39,10 @@ def print_solution(data, solution):
         total_cost_time += cost_time
         print(f"The {day + 1} day:")
         print(" -> ".join([str(x) for x in sub_route]))
-        print(f"cost time: {cost_time}h\n")
+        print(f"cost time: {cost_time}s\n")
 
     in_time_window.sort()
-    print(f"total time spent: {total_cost_time}h")
+    print(f"total time spent: {total_cost_time}s")
     print(f"point in time window: {in_time_window}\n")
 
 
