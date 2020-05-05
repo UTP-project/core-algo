@@ -144,51 +144,47 @@ class SGA:
             with0_route.append([0, *sub_route, 0])
         return with0_route
 
-    def pfih(self, penalty_factor=1):
+    def pfih(self):
         ind = []
-        remain_id = [*range(1, self.gene_num + 1)]
-        random.shuffle(remain_id)
-        prev = 0
-        cur_time = 0
-        leave_time = 0
-        while len(ind) < self.gene_num:
-            min_id = 0
-            min_additional_cost = float("inf")
-            # calculate additional_cost[prev, :] of remain_id and find minimum
-            for cur in remain_id:
-                arrival_time = (
-                    cur_time + self.stay_time[prev] + self.time_matrix[prev][cur]
-                )
-                early, late = self.time_window[cur]
-                additional_cost = toolbox.additional_cost(
-                    self.time_matrix[prev][cur],
-                    early,
-                    late,
-                    arrival_time,
-                    penalty_factor,
-                )
-                if additional_cost < min_additional_cost:
-                    min_id = cur
-                    min_additional_cost = additional_cost
-            # check feasibility
-            return_time = self.time_matrix[min_id][0]
-            next_leave_time = (
-                leave_time
-                + self.time_matrix[prev][min_id]
-                + self.stay_time[min_id]
-                + return_time
+        # init random idx of gene
+        remain_idx = [*range(1, self.gene_num + 1)]
+        random.shuffle(remain_idx)
+
+        start = 0
+        prev = None
+        while len(remain_idx) > 0:
+            if prev is None:
+                # pick the last idx
+                ind.append(remain_idx.pop())
+                continue
+
+            # find the min distance point
+            min_idx = remain_idx[0]
+            min_cost = self.time_matrix[prev][min_idx]
+            for idx in remain_idx:
+                cost = self.time_matrix[prev][idx]
+                if cost < min_cost:
+                    min_idx = idx
+                    min_cost = cost
+
+            # check feasible
+            encoded_route = [*ind[start:], min_idx]
+            decoded_route = toolbox.route_decode(
+                self.day_limit_time, self.time_matrix, self.stay_time, encoded_route
             )
-            if next_leave_time <= self.day_limit_time:
-                leave_time = next_leave_time - return_time
-                cur_time += self.stay_time[prev] + self.time_matrix[prev][min_id]
-                prev = min_id
-                ind.append(min_id)
-                # remove selected id
-                remain_id.remove(min_id)
-            else:
-                prev = 0
-                cur_time = 0
-                leave_time = 0
+
+            # out the day limit
+            if len(decoded_route) > 1:
+                start = len(ind)
+                prev = remain_idx.pop()
+                ind.append(prev)
+                continue
+
+            # update individul and remain idx
+            prev = min_idx
+            ind.append(min_idx)
+            remain_idx.remove(min_idx)
+
         return ind
 
     # generate random list
