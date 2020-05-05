@@ -55,25 +55,24 @@ def rws_select(population, fitness):
 def tourn_select(population, fitness, set_size=2, elite_prob=0.5):
     pop_num = len(population)
     parents = []
-    for _ in range(set_size):
-        for cur in range(0, pop_num, set_size):
-            rand = random.random()
-            if rand <= elite_prob:
-                # select elite(the max fitness individual)
-                min_fitness_idx = cur
-                min_fitness = fitness[cur]
-                for offset in range(1, set_size):
-                    if cur + offset < pop_num and fitness[cur + offset] < min_fitness:
-                        min_fitness_idx = cur + offset
-                        min_fitness = fitness[cur + offset]
-                parents.append(population[min_fitness_idx].copy())
-            else:
-                # random pick one
-                stop = set_size
-                if cur + set_size >= pop_num:
-                    stop = pop_num - cur
-                idx = cur + random.randrange(0, stop)
-                parents.append(population[idx].copy())
+    for _ in range(pop_num):
+        # get random set of tournament
+        tourn_set_idx = random.sample(range(pop_num), set_size)
+
+        # random pick one in tournament set
+        [best_fitness_idx] = random.sample(tourn_set_idx, 1)
+        best_fitness = fitness[best_fitness_idx]
+
+        rand = random.random()
+        # select best fitness individual of tournament set
+        if rand <= elite_prob:
+            for idx in tourn_set_idx:
+                if fitness[idx] < best_fitness:
+                    best_fitness_idx = idx
+                    best_fitness = fitness[idx]
+
+        parents.append(population[best_fitness_idx].copy())
+
     return parents
 
 
