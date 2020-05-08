@@ -10,13 +10,22 @@ from tabulate import tabulate
 def average_res(ga, cal_times=100, **params):
     cost_sum = 0
     runtime_sum = 0
+    gen_sum = 0
+    speed_sum = 0
     for _ in range(cal_times):
         # solve the question
-        res, runtime, _ = ga.solve(**params)
+        res, runtime, last_gen = ga.solve(**params)
         # update data
         cost_sum += res[-1][1][0]
         runtime_sum += runtime
-    return (cost_sum / cal_times, runtime_sum / cal_times)
+        gen_sum += last_gen
+        speed_sum += (res[0][1][0] - res[-1][1][0]) / last_gen
+    return (
+        cost_sum / cal_times,
+        runtime_sum / cal_times,
+        gen_sum / cal_times,
+        speed_sum / cal_times,
+    )
 
 
 def print_table(base, compare, header, filename=""):
@@ -49,8 +58,7 @@ def param_compare():
     select_method = input("choose a select method(*rws, tourn): ") or "rws"
     select_args = []
     if select_method == "tourn":
-        set_size = int(input("set size of tourn(*2): ") or 2)
-        select_args = [set_size, 1]
+        select_args = [4, 0.7]
     xo_method = input("choose a crossover method(*pmx, cbx): ") or "pmx"
 
     # get average times
@@ -69,31 +77,24 @@ def param_compare():
 
     # init solve params
     solve_params = {
-        "convergence": {
-            "max_gen": 300,
-            "min_gen": 100,
-            "observe_gen": 80,
-            "mode": "dev",
-        },
-        "exact-300": {"max_gen": 300, "mode": "dev"},
+        # "convergence": {
+        #     "max_gen": 500,
+        #     "min_gen": 100,
+        #     "observe_gen": 100,
+        #     "mode": "dev",
+        # },
+        "time-2500": {"max_gen": 1800, "limit_time": 2.5, "mode": "dev"},
     }
 
     # init compare params
     compare_params_dict = {
-        "00r-50p-00pf": {},
-        "02-recovery": {"recovery_rate": 0.02},
-        "06-recovery": {"recovery_rate": 0.06},
+        "00r-50p-00pf-100el": {},
+        "04-recovery": {"recovery_rate": 0.04},
+        "08-recovery": {"recovery_rate": 0.08},
         "04-pfih": {"pfih_rate": 0.04},
         "08-pfih": {"pfih_rate": 0.08},
         "12-pfih": {"pfih_rate": 0.12},
     }
-
-    #
-    if select_method == "tourn":
-        compare_params_dict["60-elite"] = {"select_args": [select_args[0], 0.6]}
-        compare_params_dict["70-elite"] = {"select_args": [select_args[0], 0.7]}
-        compare_params_dict["80-elite"] = {"select_args": [select_args[0], 0.8]}
-        compare_params_dict["90-elite"] = {"select_args": [select_args[0], 0.9]}
 
     for iteration_mode, param in solve_params.items():
         compare_res = []
@@ -101,10 +102,10 @@ def param_compare():
         for k, v in compare_params_dict.items():
             inst_params = {**base_inst_params, **v}
             ga = SGA(**inst_params)
-            cost, runtime = average_res(ga, average_times, **param)
-            if k == "00r-50p-00pf":
+            cost, runtime, gen, _ = average_res(ga, average_times, **param)
+            if k == "00r-50p-00pf-100el":
                 base_res = [cost, runtime]
-                compare_res.append([k, cost, runtime])
+                compare_res.append([k, cost, runtime, gen])
             else:
                 base_cost, base_runtime = base_res
                 compare_res.append(
@@ -112,9 +113,10 @@ def param_compare():
                         k,
                         round((cost - base_cost) * 100 / base_cost, 2),
                         round((runtime - base_runtime) * 100 / base_runtime, 2),
+                        gen,
                     ]
                 )
-        headers = ["", "cost(%)", "runtime(%)"]
+        headers = ["", "cost(%)", "runtime(%)", "generation"]
         tbl = tabulate(compare_res, headers=headers)
         print(tbl)
 
@@ -153,23 +155,30 @@ def method_compare():
     # init solve params
     solve_params = {
         "convergence": {
-            "max_gen": 300,
+            "max_gen": 500,
             "min_gen": 100,
-            "observe_gen": 80,
+            "observe_gen": 100,
             "mode": "dev",
         },
-        "exact-300": {"max_gen": 300, "mode": "dev"},
+        "time-2500": {"max_gen": 1800, "limit_time": 2.5, "mode": "dev"},
     }
 
     # init compare params
     compare_params_dict = {
-        "rws-pmx": {},
-        "tourn-pmx": {"select_method": "tourn", "select_args": [4, 0.9]},
-        "rws-cbx": {"xo_method": "cbx"},
-        "tourn-cbx": {
+        "obx-rws": {},
+        "obx-tourn": {"select_method": "tourn", "select_args": [4, 0.7]},
+        "cbx-rws": {"xo_method": "cbx"},
+        "cbx-tourn": {
             "select_method": "tourn",
-            "select_args": [4, 0.9],
+            "select_args": [4, 0.7],
             "xo_method": "cbx",
+        },
+        "cbx-rws-rec03": {"xo_method": "cbx", "recovery_rate": 0.03},
+        "cbx-tourn-rec03": {
+            "select_method": "tourn",
+            "select_args": [4, 0.7],
+            "xo_method": "cbx",
+            "recovery_rate": 0.03,
         },
     }
 
@@ -179,20 +188,32 @@ def method_compare():
         for k, v in compare_params_dict.items():
             inst_params = {**base_inst_params, **v}
             ga = SGA(**inst_params)
-            cost, runtime = average_res(ga, average_times, **param)
-            if k == "rws-pmx":
+            cost, runtime, gen, speed = average_res(ga, average_times, **param)
+            if k == "obx-rws":
                 base_res = [cost, runtime]
-                compare_res.append([k, cost, runtime])
+                compare_res.append([k, cost, 0, runtime, 0, gen, speed])
             else:
                 base_cost, base_runtime = base_res
                 compare_res.append(
                     [
                         k,
+                        cost,
                         round((cost - base_cost) * 100 / base_cost, 2),
+                        runtime,
                         round((runtime - base_runtime) * 100 / base_runtime, 2),
+                        gen,
+                        speed,
                     ]
                 )
-        headers = ["", "cost(%)", "runtime(%)"]
+        headers = [
+            "",
+            "cost",
+            "cost(%)",
+            "runtime",
+            "runtime(%)",
+            "generation",
+            "con speed",
+        ]
         tbl = tabulate(compare_res, headers=headers)
         print(tbl)
 
